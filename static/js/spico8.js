@@ -73,6 +73,8 @@
     var cameraOffsetX = 0;
     var cameraOffsetY = 0;
 
+    var clipping = null;
+
     // setup the game
     var game  = new Phaser.Game(screenWidth, screenHeight,
                                 Phaser.CANVAS,
@@ -98,7 +100,18 @@
     // EXPOSED FUNCTIONS //
 
     // graphics
-    window.clip = function (x, y, w, h) {};
+    window.clip = function (x, y, w, h) {
+        if (arguments.length === 0) {
+            clipping = null;
+        } else {
+            clipping = {
+                x0: x,
+                y0: y,
+                x1: x + w,
+                y1: y + h
+            };
+        }
+    };
     window.pget = function (x, y) {
         try {
             return colorDecoding(screenBitmapData[flr(y)][flr(x)].join());
@@ -109,7 +122,11 @@
     window.pset = function (x, y, c) {
         c = c || currentColor;
 
+        // skip transparent colors
         if (_.contains(transparentColors, c)) return;
+
+        // skip pixels outside the clipping region, if set
+        if (clipping !== null && (x < clipping.x0 || x >= clipping.x1 || y < clipping.y0 || y >= clipping.y1)) return;
 
         try {
             screenBitmapData[flr(y) - cameraOffsetY][flr(x) - cameraOffsetX] = colors[c];

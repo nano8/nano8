@@ -4,11 +4,9 @@ var y = 0;
 
 function _update() {
     cls()
-    pal()
+    clip(0, 0, 15, 15)
     spr(0, 0, 0)
-    pal(9, 2)
     spr(0, 10, 10)
-    pal(2, 3, 1)
 }
 
 function _draw() {
