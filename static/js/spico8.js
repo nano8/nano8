@@ -39,7 +39,8 @@
     var screenWidth  = PICO_SCREEN_WIDTH;
     var screenHeight = PICO_SCREEN_HEIGHT;
 
-    var colorValues = DEFAULT_COLORS_VALUES;
+    var colorValues         = DEFAULT_COLORS_VALUES;
+    var originalColorValues = DEFAULT_COLORS_VALUES;
 
     var globalCounter = 0;
     var currentColor = 0;
@@ -51,6 +52,7 @@
     var spritesheet;
     var spritesheetRowLength;
     var spritesheetSpritesPerRow;
+    var spriteFlags;
 
     // setup the game
     var game  = new Phaser.Game(screenWidth, screenHeight,
@@ -83,8 +85,23 @@
             screenBitmapData[flr(y)][flr(x)] = c || currentColor;
         } catch (err) {}
     };
-    window.fget = function (n, f) {};
-    window.fset = function (x, f, v) {};
+    window.fget = function (n, f) {
+        var flag = spriteFlags[n] || 0;
+
+        // return the number or the nth bit of it as boolean
+        return f !== undefined ? ((flag & ( 1 << f )) >> f) === 1 : flag
+    };
+    window.fset = function (n, f, v) {
+        // sets the number of the flag or a specific bit
+        if (arguments.length === 2) {
+            spriteFlags[n] = f;
+        } else if (arguments.length === 3) {
+            var flagBinary = (spriteFlags[n] >>> 0).toString(2).split('');
+
+            flagBinary[f]  = v === true ? '1' : '0';
+            spriteFlags[n] = parseInt(flagBinary.join(''), 2);
+        }
+    };
     window.print = function (str, x, y, c) {};
     window.cursor = function (x, y) {};
     window.color = function (c) {
@@ -206,8 +223,10 @@
             _.times(SPRITE_WIDTH * w, function (xx) {
                 var shiftX = flipX === true ? (SPRITE_WIDTH * w) - 1 - xx : xx;
                 var shiftY = flipY === true ? (SPRITE_HEIGHT * h) - 1 - yy : yy;
+
                 var row    = shiftY + (flr(n / spritesheetSpritesPerRow) * SPRITE_HEIGHT);
                 var column = ((n * SPRITE_WIDTH) + shiftX) % spritesheetRowLength
+
                 pset(x + xx, y + yy, spritesheet[row][column]);
             });
         });
@@ -284,6 +303,8 @@
         });
         spritesheetRowLength     = spritesheet[0].length;
         spritesheetSpritesPerRow = spritesheetRowLength / SPRITE_WIDTH;
+
+        spriteFlags = _.map(_.chunk(SPRITE_FLAGS.join('').split(''), 2), function (f) { return parseInt(f.join(''), 16) });
 
         // call the game _init() function if exists
         if (window._init) window._init();
