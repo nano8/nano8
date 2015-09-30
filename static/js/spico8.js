@@ -204,8 +204,10 @@
 
         _.times(SPRITE_HEIGHT * h, function (yy) {
             _.times(SPRITE_WIDTH * w, function (xx) {
-                var row    = yy + (flr(n / spritesheetSpritesPerRow) * SPRITE_HEIGHT);
-                var column = ((n * SPRITE_WIDTH) + xx) % spritesheetRowLength
+                var shiftX = flipX === true ? (SPRITE_WIDTH * w) - 1 - xx : xx;
+                var shiftY = flipY === true ? (SPRITE_HEIGHT * h) - 1 - yy : yy;
+                var row    = shiftY + (flr(n / spritesheetSpritesPerRow) * SPRITE_HEIGHT);
+                var column = ((n * SPRITE_WIDTH) + shiftX) % spritesheetRowLength
                 pset(x + xx, y + yy, spritesheet[row][column]);
             });
         });
