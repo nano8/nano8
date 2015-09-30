@@ -5,10 +5,8 @@ var y = 0;
 function _update() {
     cls();
 
-    spr(0, 0, 0);
-    spr(1, 8, 0);
-    spr(18, 16, 0);
-    spr(35, 24, 0);
+    // camera(10, 10);
+    // spr(0, 10, 10);
 
     // sspr(0, 0, 16, 16, 00, 0, 32, 32, true, true);
 

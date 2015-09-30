@@ -41,6 +41,7 @@
 
     var colorValues         = DEFAULT_COLORS_VALUES;
     var originalColorValues = DEFAULT_COLORS_VALUES;
+    var displayColorValues  = DEFAULT_COLORS_VALUES;
 
     var globalCounter = 0;
     var currentColor = 0;
@@ -54,15 +55,18 @@
     var spritesheetSpritesPerRow;
     var spriteFlags;
 
+    var cameraOffsetX = 0;
+    var cameraOffsetY = 0;
+
     // setup the game
     var game  = new Phaser.Game(screenWidth, screenHeight,
                                 Phaser.CANVAS,
                                 '',
                                 {
-                                     init: init,
+                                     init:    init,
                                      preload: preload,
-                                     update: update,
-                                     render: render
+                                     update:  update,
+                                     render:  render
                                  },
                                  false, false);
     var retroDisplay = { scale: SCALE_FACTOR, canvas: null, context: null, width: 0, height: 0 };
@@ -82,7 +86,7 @@
     };
     window.pset = function (x, y, c) {
         try {
-            screenBitmapData[flr(y)][flr(x)] = c || currentColor;
+            screenBitmapData[flr(y) - cameraOffsetY][flr(x) - cameraOffsetX] = c || currentColor;
         } catch (err) {}
     };
     window.fget = function (n, f) {
@@ -110,7 +114,13 @@
     window.cls = function (c) {
         screenBitmapData = _.map(_.range(screenHeight), function () { return _.map(_.range(screenWidth), function () { return 0; }) });
     };
-    window.camera = function (x, y) {};
+    window.camera = function (x, y) {
+        x = x || 0;
+        y = y || 0;
+
+        cameraOffsetX = x;
+        cameraOffsetY = y;
+    };
     window.circ = function (x, y, r, c) {
         c = c || currentColor;
 
@@ -203,10 +213,18 @@
         });
     };
     window.pal = function (c0, c1, p) {
+        p = p || 0;
+
+        debugger;
         if (arguments.length === 0) {
-            colorValues = _.cloneDeep(originalColorValues);
+            colorValues        = _.cloneDeep(originalColorValues);
+            displayColorValues = _.cloneDeep(originalColorValues);
         } else {
-            colorValues[c0] = _.cloneDeep(colorValues[c1]);
+            if (p === 0) {
+                colorValues[c0] = _.cloneDeep(originalColorValues[c1]);
+            } else {
+                displayColorValues[c0] = _.cloneDeep(originalColorValues[c1]);
+            }
         }
     };
     window.palt = function (c, t) {
@@ -351,7 +369,7 @@
         if (window._draw) window._draw();
 
         screenBitmap.processPixelRGB(function (p, x, y) {
-            var color = colorValues[screenBitmapData[y][x]];
+            var color = displayColorValues[screenBitmapData[y][x]];
 
             if (color === undefined) debugger;
 
