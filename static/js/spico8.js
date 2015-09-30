@@ -202,7 +202,13 @@
             });
         });
     };
-    window.pal = function (c0, c1, p) {};
+    window.pal = function (c0, c1, p) {
+        if (arguments.length === 0) {
+            colorValues = _.cloneDeep(originalColorValues);
+        } else {
+            colorValues[c0] = _.cloneDeep(colorValues[c1]);
+        }
+    };
     window.palt = function (c, t) {
         if (c !== undefined && t !== undefined) {
             colorValues[c][3] = t ? 0 : 255;
@@ -216,22 +222,42 @@
         w = w || 1;
         h = h || 1;
 
-        var spriteX = n;
-        var spriteY = n;
+        var spriteX = (n * SPRITE_WIDTH) % spritesheetRowLength;
+        var spriteY = flr(n / spritesheetSpritesPerRow) * SPRITE_HEIGHT;
+        var spriteW = spriteX + (SPRITE_WIDTH * w);
+        var spriteH = spriteY + (SPRITE_HEIGHT * h);
 
-        _.times(SPRITE_HEIGHT * h, function (yy) {
-            _.times(SPRITE_WIDTH * w, function (xx) {
-                var shiftX = flipX === true ? (SPRITE_WIDTH * w) - 1 - xx : xx;
-                var shiftY = flipY === true ? (SPRITE_HEIGHT * h) - 1 - yy : yy;
-
-                var row    = shiftY + (flr(n / spritesheetSpritesPerRow) * SPRITE_HEIGHT);
-                var column = ((n * SPRITE_WIDTH) + shiftX) % spritesheetRowLength
-
-                pset(x + xx, y + yy, spritesheet[row][column]);
-            });
-        });
+        sspr(spriteX,
+             spriteY,
+             spriteW, spriteH,
+             x, y,
+             spriteW, spriteH,
+             flipX, flipY);
     };
-    window.sspr = function (sx, sy, sw, sh, dx, dy, dw, dh, flipX, flipY) {};
+    window.sspr = function (sx, sy, sw, sh, dx, dy, dw, dh, flipX, flipY) {
+        // reproduces pico behaviour
+        if (dw !== undefined && dh === undefined) {
+            dh = 0;
+        } else {
+            dw = dw || sw;
+            dh = dh || sh;
+        }
+
+        var ratioX = sw / dw;
+        var ratioY = sh / dh;
+
+        // use the nearest neighbour algorythm to scale the image
+        _.each(_.range(dh), function (y) {
+            _.each(_.range(dw), function (x) {
+                var xx = flipX === true ?  dw - 1 - x : x;
+                var yy = flipY === true ?  dh - 1 - y : y;
+                var scaledX = flr(xx * ratioX);
+                var scaledY = flr(yy * ratioY);
+
+                pset(dx + x, dy + y, spritesheet[sy + scaledY][sx + scaledX]);
+            });
+        })
+    };
 
     // input
     window.btn = function (i, p) {};
