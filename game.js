@@ -5,10 +5,12 @@ var y = 0;
 function _update() {
     cls();
 
-    spr(0, 0, 0);
-    spr(1, 8, 0);
-    spr(18, 16, 0);
-    spr(35, 24, 0);
+    // spr(0, 0, 0);
+    // spr(1, 8, 0);
+    // spr(18, 16, 0);
+    // spr(35, 24, 0);
+
+    spr(0, 0, 0, 4, 3);
 
     // _.times(128, function (y) {
     //     _.times(128, function (x) {

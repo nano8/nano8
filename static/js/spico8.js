@@ -196,11 +196,14 @@
         }
     };
     window.spr = function (n, x, y, w, h, flipX, flipY) {
+        w = w || 1;
+        h = h || 1;
+
         var spriteX = n;
         var spriteY = n;
 
-        _.times(SPRITE_HEIGHT, function (yy) {
-            _.times(SPRITE_WIDTH, function (xx) {
+        _.times(SPRITE_HEIGHT * h, function (yy) {
+            _.times(SPRITE_WIDTH * w, function (xx) {
                 var row    = yy + (flr(n / spritesheetSpritesPerRow) * SPRITE_HEIGHT);
                 var column = ((n * SPRITE_WIDTH) + xx) % spritesheetRowLength
                 pset(x + xx, y + yy, spritesheet[row][column]);
