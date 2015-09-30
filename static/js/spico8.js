@@ -13,22 +13,22 @@
     var SCALE_FACTOR = 4;
 
     var DEFAULT_COLORS_VALUES = [
-        [0, 0, 0, 0],
-        [29, 43, 83, 255],
-        [126, 37, 83, 255],
-        [0, 135, 81, 255],
-        [171, 82, 54, 255],
-        [95, 87, 79, 255],
-        [194, 195, 199, 255],
-        [255, 241, 232, 255],
-        [255, 0, 77, 255],
-        [255, 163, 0, 255],
-        [255, 255, 39, 255],
-        [0, 231, 86, 255],
-        [41, 173, 255, 255],
-        [131, 118, 156, 255],
-        [255, 119, 168, 255],
-        [255, 204, 17, 255]
+        [0, 0, 0],
+        [29, 43, 83],
+        [126, 37, 83],
+        [0, 135, 81],
+        [171, 82, 54],
+        [95, 87, 79],
+        [194, 195, 199],
+        [255, 241, 232],
+        [255, 0, 77],
+        [255, 163, 0],
+        [255, 255, 39],
+        [0, 231, 86],
+        [41, 173, 255],
+        [131, 118, 156],
+        [255, 119, 168],
+        [255, 204, 17]
     ];
 
     var SPRITE_WIDTH  = 8;
@@ -39,12 +39,27 @@
     var screenWidth  = PICO_SCREEN_WIDTH;
     var screenHeight = PICO_SCREEN_HEIGHT;
 
-    var colorValues         = DEFAULT_COLORS_VALUES;
-    var originalColorValues = DEFAULT_COLORS_VALUES;
-    var displayColorValues  = DEFAULT_COLORS_VALUES;
+    // will never change. this is the setting of the palette for the current game
+    var palette = DEFAULT_COLORS_VALUES;
+
+    // originally set = to palette, it can be altered by pal() and palt()
+    // the drawing functions refer to this
+    var colors = _.cloneDeep(palette);
+
+    // a dictionary that maps a string representing the color to the color index
+    // for example '0,0,0': 0
+    // it always refers to the _original_ colors and is not affected by calls to pal() or palt()
+    var colorDecoding;
+
+    // remaps a color to another. this is used in the display phase for colors remapped
+    // by pal(c0, c1, p)
+    // a dictionary like '0,0,0': [0, 0, 0]
+    var colorRemappings;
+
+    var transparentColors = [0];
 
     var globalCounter = 0;
-    var currentColor = 0;
+    var currentColor  = 0;
 
     var screenBitmap;
     var screenBitmapData;
@@ -72,6 +87,13 @@
     var retroDisplay = { scale: SCALE_FACTOR, canvas: null, context: null, width: 0, height: 0 };
 
     // INNER FUNCTIONS
+    // generate the color remappings out the palette
+    function generateColorRemappings () {
+        colorRemappings = _.reduce(palette, function (acc, c, idx) {
+            acc[c.join()] = _.cloneDeep(c);
+            return acc;
+        }, {});
+    }
 
     // EXPOSED FUNCTIONS //
 
@@ -79,14 +101,18 @@
     window.clip = function (x, y, w, h) {};
     window.pget = function (x, y) {
         try {
-            return screenBitmapData[flr(y)][flr(x)];
+            return colorDecoding(screenBitmapData[flr(y)][flr(x)].join());
         } catch (err) {
            return 0;
         }
     };
     window.pset = function (x, y, c) {
+        c = c || currentColor;
+
+        if (_.contains(transparentColors, c)) return;
+
         try {
-            screenBitmapData[flr(y) - cameraOffsetY][flr(x) - cameraOffsetX] = c || currentColor;
+            screenBitmapData[flr(y) - cameraOffsetY][flr(x) - cameraOffsetX] = colors[c];
         } catch (err) {}
     };
     window.fget = function (n, f) {
@@ -112,7 +138,7 @@
         currentColor = c;
     };
     window.cls = function (c) {
-        screenBitmapData = _.map(_.range(screenHeight), function () { return _.map(_.range(screenWidth), function () { return 0; }) });
+        screenBitmapData = _.map(_.range(screenHeight), function () { return _.map(_.range(screenWidth), function () { return palette[0]; }) });
     };
     window.camera = function (x, y) {
         x = x || 0;
@@ -215,25 +241,29 @@
     window.pal = function (c0, c1, p) {
         p = p || 0;
 
-        debugger;
+        // reset colors and colorRemappings if no argument is supplied
         if (arguments.length === 0) {
-            colorValues        = _.cloneDeep(originalColorValues);
-            displayColorValues = _.cloneDeep(originalColorValues);
+            colors = _.cloneDeep(palette);
+            generateColorRemappings();
         } else {
+            // alters the colors at draw time or display time
             if (p === 0) {
-                colorValues[c0] = _.cloneDeep(originalColorValues[c1]);
+                colors[c0] = _.cloneDeep(palette[c1]);
             } else {
-                displayColorValues[c0] = _.cloneDeep(originalColorValues[c1]);
+                colorRemappings[palette[c0].join()] = palette[c1];
             }
         }
     };
     window.palt = function (c, t) {
+        // sets the given color to transparent or opaque or reset transparency
         if (c !== undefined && t !== undefined) {
-            colorValues[c][3] = t ? 0 : 255;
+            if (t === true)
+                transparentColors = _.uniq(transparentColors.concat([c]));
+            else
+                transparentColors = _.remove(transparentColors, c);
         }
         else {
-            colorValues = colorValues.map(function (c) { return _.dropRight().concat([255]); });
-            colorValues[0][3] = 0;
+            transparentColors = [0];
         }
     };
     window.spr = function (n, x, y, w, h, flipX, flipY) {
@@ -348,6 +378,13 @@
         spritesheetRowLength     = spritesheet[0].length;
         spritesheetSpritesPerRow = spritesheetRowLength / SPRITE_WIDTH;
 
+        colorDecoding = _.reduce(palette, function (acc, c, idx) {
+            acc[c.join()] = idx;
+            return acc;
+        }, {});
+
+        generateColorRemappings();
+
         spriteFlags = _.map(_.chunk(SPRITE_FLAGS.join('').split(''), 2), function (f) { return parseInt(f.join(''), 16) });
 
         // call the game _init() function if exists
@@ -369,14 +406,13 @@
         if (window._draw) window._draw();
 
         screenBitmap.processPixelRGB(function (p, x, y) {
-            var color = displayColorValues[screenBitmapData[y][x]];
+            var color         = screenBitmapData[y][x];
+            var remappedColor = colorRemappings[color.join()];
 
-            if (color === undefined) debugger;
-
-            p.r = color[0];
-            p.g = color[1];
-            p.b = color[2];
-            p.a = color[3];
+            p.r = remappedColor[0];
+            p.g = remappedColor[1];
+            p.b = remappedColor[2];
+            p.a = 255;
             return p;
         });
 

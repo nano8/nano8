@@ -3,10 +3,10 @@ var x = 0;
 var y = 0;
 
 function _update() {
-    cls();
+    // cls();
 
     // camera(10, 10);
-    // spr(0, 10, 10);
+    spr(0, 10, 10);
 
     // sspr(0, 0, 16, 16, 00, 0, 32, 32, true, true);
 
