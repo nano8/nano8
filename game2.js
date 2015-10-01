@@ -4,13 +4,19 @@ var y = 0;
 
 function _update() {
     cls()
+    sset(5, 5, 5);
+    print(sget(5, 5));
+    spr(0, 10, 10);
+    sset(5, 5, 3);
+    print(sget(5, 5));
+
     // _.times(128, function (y) {
     //     _.times(128, function (x) {
     //         pset(x, y, flr(rnd(15)));
     //     });
     // });
-    print('CIAO AMICI!', 0, 0);
-    print('CIAO AMICI!', 0, 0);
+    // print('CIAO AMICI!', 0, 0);
+    // print('CIAO AMICI!', 0, 0);
 }
 
 function _draw() {

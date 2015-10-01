@@ -169,8 +169,18 @@
             screenBitmapData[flr(y) - cameraOffsetY][flr(x) - cameraOffsetX] = colors[c];
         } catch (err) {}
     };
-    window.sget = function (x, y) {};
-    window.sset = function (x, y, c) {};
+    window.sget = function (x, y) {
+        try {
+            return spritesheet[y][x];
+        } catch (err) {
+            return 0;
+        }
+    };
+    window.sset = function (x, y, c) {
+        try {
+            spritesheet[y][x] = c;
+        } catch (err) {}
+    };
     window.fget = function (n, f) {
         var flag = spriteFlags[n] || 0;
 
@@ -192,7 +202,7 @@
         x = x || cursorX;
         y = y || cursorY;
 
-        _.each(str.split(''), function (character, i) {
+        _.each(String(str).split(''), function (character, i) {
             _.times(PICO8_SYSTEMFONT.CHAR_H, function (yy) {
                 _.times(PICO8_SYSTEMFONT.CHAR_W, function (xx) {
                     try {
