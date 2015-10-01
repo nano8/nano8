@@ -4,15 +4,12 @@
     ///////////
 
     // CONSTANTS //
+
+    // pico-8 constants
     var PICO_SCREEN_WIDTH  = 128;
     var PICO_SCREEN_HEIGHT = 128;
 
-    var SPICO_SCREEN_WIDTH  = 256;
-    var SPICO_SCREEN_HEIGHT = 224;
-
-    var SCALE_FACTOR = 4;
-
-    var DEFAULT_COLORS_VALUES = [
+    var PICO_DEFAULT_COLORS_VALUES = [
         [0, 0, 0],
         [29, 43, 83],
         [126, 37, 83],
@@ -31,10 +28,21 @@
         [255, 204, 17]
     ];
 
+    var PICO_INITIAL_COLOR = 6; // grey
+
+    var PICO_TRANSPARENT_COLORS = [0];
+
+    // spico-8 constants
+    var SPICO_SCREEN_WIDTH  = 256;
+    var SPICO_SCREEN_HEIGHT = 224;
+
+    // common constants
+    var SCALE_FACTOR = 4;
+
     var SPRITE_WIDTH  = 8;
     var SPRITE_HEIGHT = 8;
 
-    var PICO8_SYSTEMFONT = {
+    var SYSTEMFONT = {
         CHARSET:   'ABCDEFGHIJKLMNOPQRSTUVWXYZ"\'`-_/1234567890!?[](){}.,;:<>+=%#^*~ ',
         CHAR_W:    4,
         CHAR_H:    6,
@@ -44,15 +52,20 @@
 
     // SPICO VARIABLES
 
-    var screenWidth  = PICO_SCREEN_WIDTH;
-    var screenHeight = PICO_SCREEN_HEIGHT;
+    // the screensize must be initialized early because it is used to instantiate the game
+    var screenWidth;
+    var screenHeight;
+    if (SYSTEM === 'PICO-8') {
+        screenWidth  = PICO_SCREEN_WIDTH;
+        screenHeight = PICO_SCREEN_HEIGHT;
+    }
 
     // will never change. this is the setting of the palette for the current game
-    var palette = DEFAULT_COLORS_VALUES;
+    var palette;
 
     // originally set = to palette, it can be altered by pal() and palt()
     // the drawing functions refer to this
-    var colors = _.cloneDeep(palette);
+    var colors;
 
     // a dictionary that maps a string representing the color to the color index
     // for example '0,0,0': 0
@@ -64,10 +77,10 @@
     // a dictionary like '0,0,0': [0, 0, 0]
     var colorRemappings;
 
-    var transparentColors = [0];
+    var transparentColors;
 
-    var globalCounter = 0;
-    var currentColor  = 6; // grey
+    var globalCounter;
+    var currentColor;
 
     var screenBitmap;
     var screenBitmapData;
@@ -78,14 +91,14 @@
     var spritesheetSpritesPerRow;
     var spriteFlags;
 
-    var cameraOffsetX = 0;
-    var cameraOffsetY = 0;
+    var cameraOffsetX;
+    var cameraOffsetY;
 
-    var clipping = null;
+    var clipping;
 
-    var systemfont = {};
-    var cursorX = 0;
-    var cursorY = 0;
+    var systemfont;
+    var cursorX;
+    var cursorY;
 
     // setup the game
     var game  = new Phaser.Game(screenWidth, screenHeight,
@@ -111,22 +124,24 @@
 
     function generateRetroFont () {
         var fontImg = new Image();
-        fontImg.src = PICO8_SYSTEMFONT.DATA;
+        fontImg.src = SYSTEMFONT.DATA;
 
         var fontCanvas = document.createElement('canvas');
         fontCanvas.width   = fontImg.width;
         fontCanvas.height  = fontImg.height;
         fontCanvas.getContext('2d').drawImage(fontImg, 0, 0, fontImg.width, fontImg.height);
 
-        _.each(PICO8_SYSTEMFONT.CHARSET, function (c, i) {
-            var letter = fontCanvas.getContext('2d').getImageData(i * PICO8_SYSTEMFONT.CHAR_W, 0, PICO8_SYSTEMFONT.CHAR_W, PICO8_SYSTEMFONT.CHAR_H).data;
-            systemfont[c] = _.map(_.range(PICO8_SYSTEMFONT.CHAR_H), function () { return _.map(_.range(PICO8_SYSTEMFONT.CHAR_W), function () { return 0; }) });
+        systemfont = {};
+
+        _.each(SYSTEMFONT.CHARSET, function (c, i) {
+            var letter = fontCanvas.getContext('2d').getImageData(i * SYSTEMFONT.CHAR_W, 0, SYSTEMFONT.CHAR_W, SYSTEMFONT.CHAR_H).data;
+            systemfont[c] = _.map(_.range(SYSTEMFONT.CHAR_H), function () { return _.map(_.range(SYSTEMFONT.CHAR_W), function () { return 0; }) });
 
             for (var p = letter.length; p >= 0; p -= 4) {
                 // skip if transparent
                 if (letter[p + 3] > 0) {
-                    var x = (p / 4) % PICO8_SYSTEMFONT.CHAR_W;
-                    var y = Math.floor((p / 4) / PICO8_SYSTEMFONT.CHAR_W);
+                    var x = (p / 4) % SYSTEMFONT.CHAR_W;
+                    var y = Math.floor((p / 4) / SYSTEMFONT.CHAR_W);
 
                     systemfont[c][y][x] = 1;
                 }
@@ -203,17 +218,17 @@
         y = y || cursorY;
 
         _.each(String(str).split(''), function (character, i) {
-            _.times(PICO8_SYSTEMFONT.CHAR_H, function (yy) {
-                _.times(PICO8_SYSTEMFONT.CHAR_W, function (xx) {
+            _.times(SYSTEMFONT.CHAR_H, function (yy) {
+                _.times(SYSTEMFONT.CHAR_W, function (xx) {
                     try {
-                        if (systemfont[character][yy][xx] === 1) pset(x + xx + (i * PICO8_SYSTEMFONT.CHAR_W), y + yy);
+                        if (systemfont[character][yy][xx] === 1) pset(x + xx + (i * SYSTEMFONT.CHAR_W), y + yy);
                     } catch (err) {}
                 });
             });
         });
 
         // advance the carriage
-        cursorY += PICO8_SYSTEMFONT.CHAR_H;
+        cursorY += SYSTEMFONT.CHAR_H;
     };
     window.cursor = function (x, y) {
         cursorX = x;
@@ -437,6 +452,17 @@
     }
 
     function init () {
+        // setup variables according to the version (pico-8 or spico-8)
+        if (SYSTEM === 'PICO-8') {
+            palette           = PICO_DEFAULT_COLORS_VALUES;
+            currentColor      = PICO_INITIAL_COLOR;
+            transparentColors = PICO_TRANSPARENT_COLORS;
+        } else if (SYSTEM === 'SPICO-8') {
+            palette           = PALETTE;
+            currentColor      = INITIAL_COLOR;
+            transparentColors = TRANSPARENT_COLOR;
+        }
+
         // setup the retro display
         game.canvas.style['display'] = 'none';
         retroDisplay.canvas = Phaser.Canvas.create(this, game.width * retroDisplay.scale, game.height * retroDisplay.scale);
@@ -450,6 +476,16 @@
         // initialize the main display object
         screenBitmap = game.make.bitmapData(screenWidth, screenHeight);
         screenImage  = game.add.image(0, 0, screenBitmap);
+
+        // setup intial values
+        colors        = _.cloneDeep(palette);
+        globalCounter = 0;
+        cameraOffsetX = 0;
+        cameraOffsetY = 0;
+        clipping      = null;
+        systemfont    = {};
+        cursorX       = 0;
+        cursorY       = 0;
 
         // generate the system font
         generateRetroFont();
