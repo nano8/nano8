@@ -8,7 +8,18 @@ var y = 0;
 
 function _update() {
     cls();
-    if (btnp(0)) print("C");
+// print(sinp8(0))
+// print(sinp8(0.5))
+// print(sinp8(0.25))
+// print(sinp8(-3))
+// print(sinp8(-0.45))
+// print(sinp8(78.4))
+// console.log(sinp8(0))
+// console.log(sinp8(0.5))
+// console.log(sinp8(0.25))
+// console.log(sinp8(-3))
+// console.log(sinp8(-0.45))
+// console.log(sinp8(78.4))
 
     // sset(5, 5, 5);
     // print(sget(5, 5));

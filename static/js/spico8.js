@@ -299,6 +299,8 @@
     };
     window.cls = function (c) {
         screenBitmapData = _.map(_.range(screenHeight), function () { return _.map(_.range(screenWidth), function () { return palette[0]; }) });
+        cursorX = 0;
+        cursorY = 0;
     };
     window.camera = function (x, y) {
         x = x || 0;
@@ -500,24 +502,26 @@
     // math
     window.max = Math.max;
     window.min = Math.min;
-    window.mid = function (x, y, z) { /* return x > y and x or y > z and z or y */ };
+    window.mid = function (x, y, z) { return x > y && x || y > z && z || y; };
     window.flr = Math.floor;
     window.sin = Math.sin;
     window.cos = Math.cos;
-    window.sinp8 = function (x) { return Math.sin(Math.PI*x); }
-    window.cosp8 = function (x) { return Math.cos(Math.PI*x); }
-    window.atan2 = function (dx, dy) {
-        // function __pico_angle(a)
-        //     -- FIXME: why does this work?
-        //     return (((a - math.pi) / (math.pi*2)) + 0.25) % 1.0
-        // end
+    window.sinp8 = function (x) { return Math.sin(-(x || 0) * (Math.PI * 2)); };
+    window.cosp8 = function (x) { return Math.cos((x || 0) * (Math.PI * 2)); };
+    window.atan2 = Math.atan2;
+    window.atan2p8 = function (dx, dy) {
+        // thanks to https://github.com/ftsf/picolove
+        function picoAngle(a) { return (((a - Math.PI) / (Math.PI * 2)) + 0.25) % 1.0; }
 
-        // atan2 = function(y,x) return __pico_angle(math.atan2(y,x)) end
+        return picoAngle(Math.atan2(dy, dx));
     };
     window.sqrt = Math.sqrt;
     window.abs = Math.abs;
-    window.rnd = function (x) { return Math.random() * (x || 1); };
-    // NOTE: srand() not implemented since it doesn's make sense in javascript
+    window.rnd = function (x) {
+        // NOTE: srand() not implemented since it doesn's make sense in javascript
+        return Math.random() * (x || 1);
+    };
+
 
     // bitwise operations
     window.band = function (x, y) { return x & y; };
