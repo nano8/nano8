@@ -1,0 +1,18 @@
+{
+  "name": "spico8editor",
+  "version": "1.0.0",
+  "description": "spico8 editor",
+  "main": "editorserver.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/retrospico8/spico8/issues"
+  },
+  "homepage": "https://github.com/retrospico8/spico8#readme",
+  "dependencies": {
+    "express": "^4.13.3"
+  }
+}

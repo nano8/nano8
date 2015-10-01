@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SPICO-8 EDITOR</title>
+
+    <script src="/static/js/lib/lodash.min.js"></script>
+    <script src="/static/js/lib/jQuery.min.js"></script>
+
+    <script>
+        $(function () {
+            $('button').on('click', function () {
+                $.ajax({
+                    type: 'POST',
+                    url: '/save',
+                    data: JSON.stringify({lorem: 'ipsum'}),
+                    success: function () { alert('DONE!') },
+                    contentType: "application/json",
+                    dataType: 'json'
+                });
+                // $.post('/save', {data: 'lorem ipsum'}, function () {
+                //     alert('DONE!');
+                // }, 'json');
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1>SPICO-8 Editor</h1>
+    <div>
+        <button>Test</button>
+    </div>
+</body>
+</html>
