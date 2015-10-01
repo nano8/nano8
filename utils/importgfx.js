@@ -16,13 +16,11 @@ var picoGfxRows = picoGfx.split('\n');
 var picoGff     = picoFile.match(/__gff__([\s\S])*(?=__map__)/gm)[0].replace('__gff__', '').trim();
 var picoGffRows = picoGff.split('\n');
 
-var picoMap     = picoFile.match(/__map__([\s\S])*(?=__sfx__)/gm)[0].replace('__gff__', '').trim();
+var picoMap     = picoFile.match(/__map__([\s\S])*(?=__sfx__)/gm)[0].replace('__map__', '').trim();
 var picoMapRows = picoMap.split('\n');
 
 var spicoNewFile = spicoFile.replace(/\/\/ __gfx__([\s\S])*(?=\/\/ __gff__)/gm, GFX_STR_OPEN + JSON.stringify(picoGfxRows, null, 4) + STR_CLOSE)
                             .replace(/\/\/ __gff__([\s\S])*(?=\/\/ __map__)/gm, GFF_STR_OPEN + JSON.stringify(picoGffRows, null, 4) + STR_CLOSE)
                             .replace(/\/\/ __map__([\s\S])*(?=\/\/ __gpl__)/gm, MAP_STR_OPEN + JSON.stringify(picoMapRows, null, 4) + STR_CLOSE);
-
-console.log(spicoNewFile);
 
 fs.writeFileSync(process.argv[SPICO_FILE_ARG_POS], spicoNewFile, 'utf-8');

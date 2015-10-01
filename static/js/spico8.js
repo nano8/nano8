@@ -29,12 +29,16 @@
     ];
 
     var PICO_INITIAL_COLOR = 6; // grey
-
     var PICO_TRANSPARENT_COLORS = [0];
+
+    var PICO_MAP_BYTES             = 2;
+    var PICO_MAP_LOWER_BYTES_LINES = 128;
 
     // spico-8 constants
     var SPICO_SCREEN_WIDTH  = 160;
     var SPICO_SCREEN_HEIGHT = 144;
+
+    var SPICO_MAP_BYTES = 3;
 
     // common constants
     var SCALE_FACTOR = 4;
@@ -68,6 +72,9 @@
             [65]        // button 2 [q] note: original pico-8 also defines tab
         ]
     ];
+
+    var BUTTON_ACTIVE_DELAY = 12;
+    var BUTTON_ACTIVE_SLEEP = 4;
 
     // SPICO VARIABLES
 
@@ -109,6 +116,9 @@
     var spritesheetRowLength;
     var spritesheetSpritesPerRow;
     var spriteFlags;
+
+    var mapSheet;
+    var mapBytes;
 
     var cameraOffsetX;
     var cameraOffsetY;
@@ -463,8 +473,9 @@
                 var yy = flipY === true ?  dh - 1 - y : y;
                 var scaledX = flr(xx * ratioX);
                 var scaledY = flr(yy * ratioY);
-
-                pset(dx + x, dy + y, spritesheet[sy + scaledY][sx + scaledX]);
+                try {
+                    pset(dx + x, dy + y, spritesheet[sy + scaledY][sx + scaledX]);
+                } catch (err) {}
             });
         })
     };
@@ -484,7 +495,7 @@
         p = p || 0;
 
         function checkBtnActive(b) {
-            return b[0] && (b[1] === 0 || (b[1] >= 12 && b[1] % 4 === 0))
+            return b[0] && (b[1] === 0 || (b[1] >= BUTTON_ACTIVE_DELAY && b[1] % BUTTON_ACTIVE_SLEEP === 0))
         }
 
         if (i !== undefined) {
@@ -542,10 +553,12 @@
             palette           = PICO_DEFAULT_COLORS_VALUES;
             currentColor      = PICO_INITIAL_COLOR;
             transparentColors = PICO_TRANSPARENT_COLORS;
+            mapBytes          = PICO_MAP_BYTES;
         } else if (SYSTEM === 'SPICO-8') {
             palette           = PALETTE;
             currentColor      = INITIAL_COLOR;
             transparentColors = TRANSPARENT_COLOR;
+            mapBytes          = SPICO_MAP_BYTES;
         }
 
         // setup the retro display
@@ -586,7 +599,6 @@
         // generate the bitmapData array
         cls();
 
-        // TODO spritesheet as ints
         spritesheet = _.map(SPRITES, function (row) {
             return _.map(row, function (cell) {
                 return parseInt(cell, 16);
@@ -594,6 +606,20 @@
         });
         spritesheetRowLength     = spritesheet[0].length;
         spritesheetSpritesPerRow = spritesheetRowLength / SPRITE_WIDTH;
+
+        mapSheet = _.map(MAP, function (row) {
+            return _.map(_.chunk(row.split(''), mapBytes), function (cell) {
+                return parseInt(cell, 16);
+            });
+        });
+        // pico-8 has the lower bytes in common with the spritesheet
+        if (SYSTEM === 'PICO-8') {
+            debugger;
+            // mapSheet = mapSheet.concat(_.takeRight(spritesheet, PICO_MAP_LOWER_BYTES_LINES))
+            // _.each(_.takeRight(spritesheet, PICO_MAP_LOWER_BYTES_LINES), function (l) {
+            //     mapSheet
+            // });
+        }
 
         colorDecoding = _.reduce(palette, function (acc, c, idx) {
             acc[c.join()] = idx;
