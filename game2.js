@@ -7,12 +7,14 @@ var x = 0;
 var y = 0;
 
 function _update() {
-    cls()
-    sset(5, 5, 5);
-    print(sget(5, 5));
-    spr(0, 10, 10);
-    sset(5, 5, 3);
-    print(sget(5, 5));
+    cls();
+    if (btnp(0)) print("C");
+
+    // sset(5, 5, 5);
+    // print(sget(5, 5));
+    // spr(0, 10, 10);
+    // sset(5, 5, 3);
+    // print(sget(5, 5));
 
     // _.times(128, function (y) {
     //     _.times(128, function (x) {

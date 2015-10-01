@@ -50,6 +50,25 @@
         DATA:     'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAAGCAYAAAAsXEDPAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAZxJREFUeNrsV9kOg0AIVP//n601HjgdzuWliSRNRXc5BhbYed1oumnefg9+o0msub5/Pxyv0/uPvStbz3hcvwv9Phj6T/s0+9E+zR9vv2bfCG/JZ/ZKPI7HyeNRXzSelfiN8F58vHjjfsYjHhU8M3hn5Hv5ouWD/A76H7RMcpVE7TZiFyjfCQUXj9+Fkz/7mS7tv0LSvlO/5x/6o/nfYZ9ne0Y22h4hiQnDRotl1GbEy8I/wnv4ROJrYYZ4VPD0eEs+2nKShgWzXa6X+qQsRotncAcA3vpMwlpFpGqvp88DsVKcUL53QPGAWf6P2Mv2RniWxF35Mpo/FVkZHSMFCP9nQZoM9iwPPNpvFXF1AugCgAGaPbCVqpzpWAxgDEhXR2AV20uYzikiIp919MyEEJGfnTBGpqSM7IgPmQKpdXytwOMEwOJlnYXspLp4Dp4OYBJnOk7kG6tcmS5VnSCwcmq6rP2suEUTVOu4XQUPE8rDH/VHYjsyAVYnjq4DGLkyateFyBUzeyVlE0CmgbIrrVkAGxvrSy+99Gf0EWAAZy4AUlI12mIAAAAASUVORK5CYII='
     };
 
+    var KEYBOARD = [
+        [ // player 1
+            [37],         // left     [left arrow]
+            [39],         // right    [right arrow]
+            [38],         // up       [up arrow]
+            [40],         // down     [down arrow]
+            [90, 67, 78], // button 1 [z, c, n]
+            [88, 86, 77]  // button 2 [x, v, m]
+        ],
+        [ // player 2
+            [83],         // left     [s]
+            [70],         // right    [f]
+            [69],         // up       [e]
+            [68],         // down     [d]
+            [81],     // button 1 [a] note: original pico-8 also defines left shift
+            [65]        // button 2 [q] note: original pico-8 also defines tab
+        ]
+    ];
+
     // SPICO VARIABLES
 
     // the screensize must be initialized early because it is used to instantiate the game
@@ -100,6 +119,9 @@
     var cursorX;
     var cursorY;
 
+    var keysPressed;
+    var keysPressedP;
+
     // setup the game
     var game  = new Phaser.Game(screenWidth, screenHeight,
                                 Phaser.CANVAS,
@@ -146,6 +168,41 @@
                     systemfont[c][y][x] = 1;
                 }
             }
+        });
+    }
+
+    function setKeysPressed (e, val) {
+        // do it twice to handle both the player keys
+        _.times(2, function (p) {
+            var keyPressed = _.findIndex(KEYBOARD[p], function (k) { return _.contains(k, e.keyCode); });
+            if (keyPressed !== -1) keysPressed[p][keyPressed] = val;
+        });
+    }
+
+    function setKeysPressedP (e, val) {
+        // do it twice to handle both the player keys
+        _.times(2, function (p) {
+            var keyPressed = _.findIndex(KEYBOARD[p], function (k) { return _.contains(k, e.keyCode); });
+            if (keyPressed !== -1) {
+                if (val === true) {
+                    // if the key is already pressed, ignore it.
+                    // set it to -1 so that when the first updateKeysPressedP() is called it sets it to 0
+                    // and btnp() can recognize it as "just pressed key"
+                    if (!keysPressedP[p][keyPressed][0]) keysPressedP[p][keyPressed] = [true, -1]
+                } else {
+                    keysPressedP[p][keyPressed] = [false, 0];
+                }
+            }
+        });
+    }
+
+    function updateKeysPressedP () {
+        _.times(2, function (p) {
+            // increases the counter of each currently pressed key
+            keysPressedP[p] = _.map(keysPressedP[p], function (k) {
+                if (k[0]) k[1]++;
+                return k;
+            });
         });
     }
 
@@ -214,14 +271,17 @@
         }
     };
     window.print = function (str, x, y, c) {
-        x = x || cursorX;
-        y = y || cursorY;
+        str = String(str !== undefined ? str : '');
+        x   = x || cursorX;
+        y   = y || cursorY;
 
-        _.each(String(str).split(''), function (character, i) {
+        if (SYSTEMFONT.UPPERCASE) str = str.toUpperCase();
+
+        _.each(str.split(''), function (character, i) {
             _.times(SYSTEMFONT.CHAR_H, function (yy) {
                 _.times(SYSTEMFONT.CHAR_W, function (xx) {
                     try {
-                        if (systemfont[character][yy][xx] === 1) pset(x + xx + (i * SYSTEMFONT.CHAR_W), y + yy);
+                        if (systemfont[character][yy][xx] === 1) pset(x + xx + (i * SYSTEMFONT.CHAR_W), y + yy, c);
                     } catch (err) {}
                 });
             });
@@ -408,9 +468,30 @@
     };
 
     // input
-    window.btn = function (i, p) {};
-    window.btnp = function (i, p) {};
+    window.btn = function (i, p) {
+        p = p || 0;
 
+        if (i !== undefined) {
+            return keysPressed[p][i];
+        } else {
+            var bitfield = _.map(keysPressed[p], function (k) { return k ? 1 : 0 }).join('');
+            return parseInt(bitfield, 2)
+        }
+    };
+    window.btnp = function (i, p) {
+        p = p || 0;
+
+        function checkBtnActive(b) {
+            return b[0] && (b[1] === 0 || (b[1] >= 12 && b[1] % 4 === 0))
+        }
+
+        if (i !== undefined) {
+            return checkBtnActive(keysPressedP[p][i]);
+        } else {
+            var bitfield = _.map(keysPressedP[p], function (k) { return checkBtnActive(k) ? 1 : 0 }).join('');
+            return parseInt(bitfield, 2)
+        }
+    };
     // map
     window.mget = function (x, y) {};
     window.mset = function (x, y, v) {};
@@ -486,6 +567,14 @@
         systemfont    = {};
         cursorX       = 0;
         cursorY       = 0;
+        keysPressed   = [
+            _.map(KEYBOARD[0], function (k) { return false; }),
+            _.map(KEYBOARD[1], function (k) { return false; })
+        ];
+        keysPressedP = [
+            _.map(KEYBOARD[0], function (k) { return [false, 0]; }),
+            _.map(KEYBOARD[1], function (k) { return [false, 0]; })
+        ];
 
         // generate the system font
         generateRetroFont();
@@ -511,6 +600,18 @@
 
         spriteFlags = _.map(_.chunk(SPRITE_FLAGS.join('').split(''), 2), function (f) { return parseInt(f.join(''), 16) });
 
+        // add keyboard event listeners
+        window.addEventListener('keydown', function (e) {
+            e.stopPropagation();
+            setKeysPressed(e, true);
+            setKeysPressedP(e, true);
+        });
+        window.addEventListener('keyup', function (e) {
+            e.stopPropagation();
+            setKeysPressed(e, false);
+            setKeysPressedP(e, false);
+        });
+
         // call the game _init() function if exists
         if (window._init) window._init();
     }
@@ -525,6 +626,7 @@
         // force 30 FPS-like mode (like pico8)
         // call the game _update() function if exists
         if (globalCounter % 2 === 0) {
+            updateKeysPressedP();
             if (window._update) window._update();
         }
     }
