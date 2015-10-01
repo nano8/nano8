@@ -34,6 +34,14 @@
     var SPRITE_WIDTH  = 8;
     var SPRITE_HEIGHT = 8;
 
+    var PICO8_SYSTEMFONT = {
+        CHARSET:   'ABCDEFGHIJKLMNOPQRSTUVWXYZ"\'`-_/1234567890!?[](){}.,;:<>+=%#^*~ ',
+        CHAR_W:    4,
+        CHAR_H:    6,
+        UPPERCASE: true,
+        DATA:     'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAAGCAYAAAAsXEDPAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAZxJREFUeNrsV9kOg0AIVP//n601HjgdzuWliSRNRXc5BhbYed1oumnefg9+o0msub5/Pxyv0/uPvStbz3hcvwv9Phj6T/s0+9E+zR9vv2bfCG/JZ/ZKPI7HyeNRXzSelfiN8F58vHjjfsYjHhU8M3hn5Hv5ouWD/A76H7RMcpVE7TZiFyjfCQUXj9+Fkz/7mS7tv0LSvlO/5x/6o/nfYZ9ne0Y22h4hiQnDRotl1GbEy8I/wnv4ROJrYYZ4VPD0eEs+2nKShgWzXa6X+qQsRotncAcA3vpMwlpFpGqvp88DsVKcUL53QPGAWf6P2Mv2RniWxF35Mpo/FVkZHSMFCP9nQZoM9iwPPNpvFXF1AugCgAGaPbCVqpzpWAxgDEhXR2AV20uYzikiIp919MyEEJGfnTBGpqSM7IgPmQKpdXytwOMEwOJlnYXspLp4Dp4OYBJnOk7kG6tcmS5VnSCwcmq6rP2suEUTVOu4XQUPE8rDH/VHYjsyAVYnjq4DGLkyateFyBUzeyVlE0CmgbIrrVkAGxvrSy+99Gf0EWAAZy4AUlI12mIAAAAASUVORK5CYII='
+    };
+
     // SPICO VARIABLES
 
     var screenWidth  = PICO_SCREEN_WIDTH;
@@ -59,7 +67,7 @@
     var transparentColors = [0];
 
     var globalCounter = 0;
-    var currentColor  = 0;
+    var currentColor  = 6; // grey
 
     var screenBitmap;
     var screenBitmapData;
@@ -74,6 +82,10 @@
     var cameraOffsetY = 0;
 
     var clipping = null;
+
+    var systemfont = {};
+    var cursorX = 0;
+    var cursorY = 0;
 
     // setup the game
     var game  = new Phaser.Game(screenWidth, screenHeight,
@@ -95,6 +107,31 @@
             acc[c.join()] = _.cloneDeep(c);
             return acc;
         }, {});
+    }
+
+    function generateRetroFont () {
+        var fontImg = new Image();
+        fontImg.src = PICO8_SYSTEMFONT.DATA;
+
+        var fontCanvas = document.createElement('canvas');
+        fontCanvas.width   = fontImg.width;
+        fontCanvas.height  = fontImg.height;
+        fontCanvas.getContext('2d').drawImage(fontImg, 0, 0, fontImg.width, fontImg.height);
+
+        _.each(PICO8_SYSTEMFONT.CHARSET, function (c, i) {
+            var letter = fontCanvas.getContext('2d').getImageData(i * PICO8_SYSTEMFONT.CHAR_W, 0, PICO8_SYSTEMFONT.CHAR_W, PICO8_SYSTEMFONT.CHAR_H).data;
+            systemfont[c] = _.map(_.range(PICO8_SYSTEMFONT.CHAR_H), function () { return _.map(_.range(PICO8_SYSTEMFONT.CHAR_W), function () { return 0; }) });
+
+            for (var p = letter.length; p >= 0; p -= 4) {
+                // skip if transparent
+                if (letter[p + 3] > 0) {
+                    var x = (p / 4) % PICO8_SYSTEMFONT.CHAR_W;
+                    var y = Math.floor((p / 4) / PICO8_SYSTEMFONT.CHAR_W);
+
+                    systemfont[c][y][x] = 1;
+                }
+            }
+        });
     }
 
     // EXPOSED FUNCTIONS //
@@ -132,6 +169,8 @@
             screenBitmapData[flr(y) - cameraOffsetY][flr(x) - cameraOffsetX] = colors[c];
         } catch (err) {}
     };
+    window.sget = function (x, y) {};
+    window.sset = function (x, y, c) {};
     window.fget = function (n, f) {
         var flag = spriteFlags[n] || 0;
 
@@ -149,8 +188,27 @@
             spriteFlags[n] = parseInt(flagBinary.join(''), 2);
         }
     };
-    window.print = function (str, x, y, c) {};
-    window.cursor = function (x, y) {};
+    window.print = function (str, x, y, c) {
+        x = x || cursorX;
+        y = y || cursorY;
+
+        _.each(str.split(''), function (character, i) {
+            _.times(PICO8_SYSTEMFONT.CHAR_H, function (yy) {
+                _.times(PICO8_SYSTEMFONT.CHAR_W, function (xx) {
+                    try {
+                        if (systemfont[character][yy][xx] === 1) pset(x + xx + (i * PICO8_SYSTEMFONT.CHAR_W), y + yy);
+                    } catch (err) {}
+                });
+            });
+        });
+
+        // advance the carriage
+        cursorY += PICO8_SYSTEMFONT.CHAR_H;
+    };
+    window.cursor = function (x, y) {
+        cursorX = x;
+        cursorY = y;
+    };
     window.color = function (c) {
         currentColor = c;
     };
@@ -365,7 +423,7 @@
 
     // GAME FUNCTIONS
     function preload () {
-
+        // game.load.image('picosystemfont', 'static/img/picosystemfont.png');
     }
 
     function init () {
@@ -382,6 +440,9 @@
         // initialize the main display object
         screenBitmap = game.make.bitmapData(screenWidth, screenHeight);
         screenImage  = game.add.image(0, 0, screenBitmap);
+
+        // generate the system font
+        generateRetroFont();
 
         // generate the bitmapData array
         cls();
@@ -410,6 +471,10 @@
 
     function update () {
         globalCounter++;
+
+        // each frame the print cursor is updated
+        cursorY = 0;
+        cursorX = 0;
 
         // force 30 FPS-like mode (like pico8)
         // call the game _update() function if exists

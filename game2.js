@@ -4,9 +4,13 @@ var y = 0;
 
 function _update() {
     cls()
-    clip(0, 0, 15, 15)
-    spr(0, 0, 0)
-    spr(0, 10, 10)
+    // _.times(128, function (y) {
+    //     _.times(128, function (x) {
+    //         pset(x, y, flr(rnd(15)));
+    //     });
+    // });
+    print('CIAO AMICI!', 0, 0);
+    print('CIAO AMICI!', 0, 0);
 }
 
 function _draw() {
