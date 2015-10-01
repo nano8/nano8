@@ -28,7 +28,7 @@
         [255, 204, 17]
     ];
 
-    var PICO_INITIAL_COLOR = 6; // grey
+    var PICO_INITIAL_COLOR      = 6; // grey
     var PICO_TRANSPARENT_COLORS = [0];
 
     var PICO_MAP_BYTES             = 2;
@@ -544,7 +544,7 @@
 
     // GAME LOOP FUNCTIONS
     function preload () {
-        // game.load.image('picosystemfont', 'static/img/picosystemfont.png');
+
     }
 
     function init () {
@@ -614,7 +614,6 @@
         });
         // pico-8 has the lower bytes in common with the spritesheet
         if (SYSTEM === 'PICO-8') {
-            debugger;
             // mapSheet = mapSheet.concat(_.takeRight(spritesheet, PICO_MAP_LOWER_BYTES_LINES))
             // _.each(_.takeRight(spritesheet, PICO_MAP_LOWER_BYTES_LINES), function (l) {
             //     mapSheet
