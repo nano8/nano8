@@ -33,8 +33,8 @@
     var PICO_TRANSPARENT_COLORS = [0];
 
     // spico-8 constants
-    var SPICO_SCREEN_WIDTH  = 256;
-    var SPICO_SCREEN_HEIGHT = 224;
+    var SPICO_SCREEN_WIDTH  = 160;
+    var SPICO_SCREEN_HEIGHT = 144;
 
     // common constants
     var SCALE_FACTOR = 4;
@@ -531,7 +531,7 @@
     window.shl = function (x, y) { return x << y; };
     window.shr = function (x, y) { return x >> y; };
 
-    // GAME FUNCTIONS
+    // GAME LOOP FUNCTIONS
     function preload () {
         // game.load.image('picosystemfont', 'static/img/picosystemfont.png');
     }
