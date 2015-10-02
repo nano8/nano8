@@ -49,7 +49,7 @@ function _init() {
     pal(15, 0) // draw solid black;
     pal(1, 8);
     sspr(8, 0, 8, 8,  60, 25, 24, 8);
-    pal() // reset palette mapping
+    pal(); // reset palette mapping
 
     // map
     mset(3, 3, mget(1, 3)+2);
@@ -64,31 +64,31 @@ function _init() {
 
     // math
     cursor(0, 70);
-    x = cos(0.125) + mid(1, 2, 3);
+    x = cosp8(0.125) + mid(1, 2, 3);
     x = (x%1) + abs(-1);
     print("x: " + x);
 
     // collections and strings
     // HANDLED BY JAVASCRIPT
-    // var a ={}
-    // add(a, 11) add(a, 12)
-    // add(a, 13) add(a, 14)
-    // del(a, 13)
-    // str="a: "
-    // for i in all(a) do
-    //  str=str..i.." "
-    // end
-    // print(str)
+    var a = []
+    a.push(11);
+    a.push(12);
+    a.push(13);
+    a.push(14);
+    a = _.filter(a, function (x) { return x !== 13})
+    var str = 'a: ';
+    _.each(a, function (ax) {
+        str += ax + ' ';
+    });
+    print(str);
 
     // foreach and anon functions
     // HANDLED BY JAVASCRIPT
-    // total=0
-    // foreach(a,
-    //  function(i)
-    //   total=total+i
-    //  end
-    // )
-    // print("total: "..total)
+    var total=0;
+    _.each(a, function (i) {
+        total += i
+    });
+    print("total: " + total);
 
 
     // callbacks and input
@@ -114,7 +114,7 @@ function _draw() {
 
     _.times(2, function (p) {
         _.times(6, function (i) {
-            var col=3;
+            var col=13;
             if (btn(i, p)) col=7;
             rectfill(40 + i * 10, 101 + p * 10,
                      48 + i * 10, 105 + p * 10, col);
