@@ -19,7 +19,7 @@ sfx(0, 3)
 x=3
 rectfill(1,1,7,7,5)
 for i=0,15 do
- print(i,x,2,i)
+ print(i, x , 2, i)
  x = x + 6 + flr(i/10)*4
 end
 
@@ -31,7 +31,7 @@ circfill(35,15,5,10)
 circ(45,15,5,11)
 line(52,10,58,20,12)
 pset(60,10,13)
-pset(62,10,pget(60,10)+1)
+pset(62,10, pget(60, 10) +1 )
 clip(72,10,8,10)
 rectfill(0,0,127,127,6)
 clip()
@@ -49,12 +49,11 @@ sspr(8,0,8,8, 60,25,24,8)
 pal() -- reset palette mapping
 
 -- map
-
 mset(3,3,mget(1,3)+2)
 mapdraw(0,3,10,35,4,3,1)
 fset(6,1,true) --pink flower
 -- only cels with flag 2 set
-mapdraw(0,3,50,35,4,3,2)
+mapdraw(0,3,50,35,4,3)
 
 -- set cursor position and color
 cursor(0,90)
@@ -80,7 +79,7 @@ print(str)
 
 -- foreach and anon functions
 total=0
-foreach(a, 
+foreach(a,
  function(i)
   total=total+i
  end
@@ -107,9 +106,9 @@ function _draw()
 
  -- show state of buttons
 
- print("buttons: ", 1,101,7) 
+ print("buttons: ", 1,101,7)
 
- for p=0,1 do 
+ for p=0,1 do
  for i=0,5 do
   col=13
   if(btn(i,p)) then col=7 end

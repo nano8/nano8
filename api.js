@@ -52,7 +52,6 @@ function _init() {
     pal() // reset palette mapping
 
     // map
-
     mset(3, 3, mget(1, 3)+2);
     map(0, 3, 10, 35, 4, 3, 1);
     fset(6, 1, true) // pink flower

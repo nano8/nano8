@@ -76,6 +76,8 @@
     var BUTTON_ACTIVE_DELAY = 12;
     var BUTTON_ACTIVE_SLEEP = 4;
 
+    var NUMBER_OF_FLAGS = 8;
+
     // SPICO VARIABLES
 
     // the screensize must be initialized early because it is used to instantiate the game
@@ -216,6 +218,40 @@
         });
     }
 
+   // helper function that implements spr() but adds an "empty" paramenter
+    // that fills the sprite with black. it is used by map() when called to
+    // draw sprite number 0 (always empty);
+    //
+    function drawSpr(n, x, y, w, h, flipX, flipY, empty) {
+        w     = w !== undefined ? w : 1;
+        h     = h !== undefined ? h : 1;
+        empty = empty !== undefined ? empty : false;
+
+        var spriteX = n;
+        var spriteY = n;
+
+        _.times(SPRITE_HEIGHT * h, function (yy) {
+            _.times(SPRITE_WIDTH * w, function (xx) {
+                var shiftX = flipX === true ? (SPRITE_WIDTH * w) - 1 - xx : xx;
+                var shiftY = flipY === true ? (SPRITE_HEIGHT * h) - 1 - yy : yy;
+                var row    = shiftY + (flr(n / spritesheetSpritesPerRow) * SPRITE_HEIGHT);
+                var column = ((n * SPRITE_WIDTH) + shiftX) % spritesheetRowLength
+
+                // skip transparent colors
+                if (_.contains(transparentColors, spritesheet[row][column])) return;
+
+                if (!empty)
+                    pset(x + xx, y + yy, spritesheet[row][column]);
+                else
+                    pset(x + xx, y + yy, 0);
+            });
+        });
+    }
+
+    function strReverse(str) {
+        return str.split("").reverse().join("");
+    }
+
     // EXPOSED FUNCTIONS //
 
     // graphics
@@ -272,10 +308,10 @@
         if (arguments.length === 2) {
             spriteFlags[n] = f;
         } else if (arguments.length === 3) {
-            var flagBinary = (spriteFlags[n] >>> 0).toString(2).split('');
+            var flagBinary = _.padRight((spriteFlags[n] >>> 0).toString(2), NUMBER_OF_FLAGS, '0').split('');
 
             flagBinary[f]  = v === true ? '1' : '0';
-            spriteFlags[n] = parseInt(flagBinary.join(''), 2);
+            spriteFlags[n] = parseInt(flagBinary.reverse().join(''), 2);
         }
     };
     window.print = function (str, x, y, c) {
@@ -431,25 +467,7 @@
         }
     };
     window.spr = function (n, x, y, w, h, flipX, flipY) {
-        w = w !== undefined ? w : 1;
-        h = h !== undefined ? h : 1;
-
-        var spriteX = n;
-        var spriteY = n;
-
-        _.times(SPRITE_HEIGHT * h, function (yy) {
-            _.times(SPRITE_WIDTH * w, function (xx) {
-                var shiftX = flipX === true ? (SPRITE_WIDTH * w) - 1 - xx : xx;
-                var shiftY = flipY === true ? (SPRITE_HEIGHT * h) - 1 - yy : yy;
-                var row    = shiftY + (flr(n / spritesheetSpritesPerRow) * SPRITE_HEIGHT);
-                var column = ((n * SPRITE_WIDTH) + shiftX) % spritesheetRowLength
-
-                // skip transparent colors
-                if (_.contains(transparentColors, spritesheet[row][column])) return;
-
-                pset(x + xx, y + yy, spritesheet[row][column]);
-            });
-        });
+        drawSpr(n, x, y, w, h, flipX, flipY);
     };
     window.sspr = function (sx, sy, sw, sh, dx, dy, dw, dh, flipX, flipY) {
         // reproduces pico behaviour
@@ -471,6 +489,8 @@
                 var scaledX = flr(xx * ratioX);
                 var scaledY = flr(yy * ratioY);
                 try {
+                    if (_.contains(transparentColors, spritesheet[sy + scaledY][sx + scaledX])) return;
+
                     pset(dx + x, dy + y, spritesheet[sy + scaledY][sx + scaledX]);
                 } catch (err) {}
             });
@@ -517,9 +537,20 @@
         // try {
             _.times(celH, function (y) {
                 _.times(celW, function (x) {
-                    if (layer !== undefined && fget(mapSheet[celY + y][celX + x]) !== layer) return;
+                    if (layer !== undefined) {
+                        var mask = _.padRight(strReverse((layer >>> 0).toString(2)), NUMBER_OF_FLAGS, '0');
+                        var flag = _.padRight(strReverse((spriteFlags[mapSheet[celY + y][celX + x]] >>> 0).toString(2)), NUMBER_OF_FLAGS, '0');
+                        if (!_.all(mask, function (m, i) {
+                            return m == '0' ? true : flag[i] === '1';
+                        })) return;
+                    }
 
-                    spr(mapSheet[celY + y][celX + x], (x * SPRITE_WIDTH) + sx, (y * SPRITE_HEIGHT) + sy);
+
+                    // draw the tile or an empty tile if sprite == 0
+                    if (celX + celY !== 0)
+                        spr(mapSheet[celY + y][celX + x], (x * SPRITE_WIDTH) + sx, (y * SPRITE_HEIGHT) + sy);
+                    else
+                        drawSpr(mapSheet[celY + y][celX + x], (x * SPRITE_WIDTH) + sx, (y * SPRITE_HEIGHT) + sy, SPRITE_WIDTH, SPRITE_HEIGHT, false, false, true);
                 });
             });
         // } catch (err) {}
