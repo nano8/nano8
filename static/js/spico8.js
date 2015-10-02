@@ -25,7 +25,7 @@
         [41, 173, 255],
         [131, 118, 156],
         [255, 119, 168],
-        [255, 204, 17]
+        [255, 193, 151]
     ];
 
     var PICO_INITIAL_COLOR      = 6; // grey
@@ -241,9 +241,6 @@
     window.pset = function (x, y, c) {
         c = c !== undefined ? c : currentColor;
 
-        // skip transparent colors
-        if (_.contains(transparentColors, c)) return;
-
         // skip pixels outside the clipping region, if set
         if (clipping !== null && (x < clipping.x0 || x >= clipping.x1 || y < clipping.y0 || y >= clipping.y1)) return;
 
@@ -443,6 +440,10 @@
                 var shiftY = flipY === true ? (SPRITE_HEIGHT * h) - 1 - yy : yy;
                 var row    = shiftY + (flr(n / spritesheetSpritesPerRow) * SPRITE_HEIGHT);
                 var column = ((n * SPRITE_WIDTH) + shiftX) % spritesheetRowLength
+
+                // skip transparent colors
+                if (_.contains(transparentColors, spritesheet[row][column])) return;
+
                 pset(x + xx, y + yy, spritesheet[row][column]);
             });
         });
@@ -564,12 +565,12 @@
             palette           = PICO_DEFAULT_COLORS_VALUES;
             currentColor      = PICO_INITIAL_COLOR;
             transparentColors = PICO_TRANSPARENT_COLORS;
-            mapNumBytes          = PICO_MAP_BYTES;
+            mapNumBytes       = PICO_MAP_BYTES;
         } else if (SYSTEM === 'SPICO-8') {
             palette           = PALETTE;
             currentColor      = INITIAL_COLOR;
             transparentColors = TRANSPARENT_COLOR;
-            mapNumBytes          = SPICO_MAP_BYTES;
+            mapNumBytes       = SPICO_MAP_BYTES;
         }
 
         // setup the retro display
