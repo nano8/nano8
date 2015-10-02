@@ -32,7 +32,7 @@
     var PICO_TRANSPARENT_COLORS = [0];
 
     var PICO_MAP_BYTES             = 2;
-    var PICO_MAP_LOWER_BYTES_LINES = 128;
+    var PICO_MAP_LOWER_BYTES_LINES = 64;
 
     // spico-8 constants
     var SPICO_SCREEN_WIDTH  = 160;
@@ -118,7 +118,7 @@
     var spriteFlags;
 
     var mapSheet;
-    var mapBytes;
+    var mapNumBytes;
 
     var cameraOffsetX;
     var cameraOffsetY;
@@ -239,7 +239,7 @@
         }
     };
     window.pset = function (x, y, c) {
-        c = c || currentColor;
+        c = c !== undefined ? c : currentColor;
 
         // skip transparent colors
         if (_.contains(transparentColors, c)) return;
@@ -254,9 +254,7 @@
     window.sget = function (x, y) {
         try {
             return spritesheet[y][x];
-        } catch (err) {
-            return 0;
-        }
+        } catch (err) { return 0; }
     };
     window.sset = function (x, y, c) {
         try {
@@ -282,8 +280,8 @@
     };
     window.print = function (str, x, y, c) {
         str = String(str !== undefined ? str : '');
-        x   = x || cursorX;
-        y   = y || cursorY;
+        x   = x !== undefined ? x : cursorX;
+        y   = y !== undefined ? y : cursorY;
 
         if (SYSTEMFONT.UPPERCASE) str = str.toUpperCase();
 
@@ -313,15 +311,13 @@
         cursorY = 0;
     };
     window.camera = function (x, y) {
-        x = x || 0;
-        y = y || 0;
+        x = x !== undefined ? x : 0;
+        y = y !== undefined ? y : 0;
 
         cameraOffsetX = x;
         cameraOffsetY = y;
     };
     window.circ = function (x, y, r, c) {
-        c = c || currentColor;
-
         // bresenham midpoint circle algorithm to draw a pixel-perfect line
         var xx = r;
         var yy = 0;
@@ -349,8 +345,6 @@
         }
     };
     window.circfill = function (x, y, r, c) {
-        c = c || currentColor;
-
         // bresenham midpoint circle algorithm to draw a pixel-perfect line
         var xx = r;
         var yy = 0;
@@ -378,8 +372,6 @@
         }
     };
     window.line = function (x0, y0, x1, y1, c) {
-        c = c || currentColor;
-
         // bresenham midpoint circle algorithm to draw a pixel-perfect line
         var dx = Math.abs(x1 - x0);
         var dy = Math.abs(y1 - y0);
@@ -411,7 +403,7 @@
         });
     };
     window.pal = function (c0, c1, p) {
-        p = p || 0;
+        p = p !== undefined ? p : 0;
 
         // reset colors and colorRemappings if no argument is supplied
         if (arguments.length === 0) {
@@ -439,28 +431,29 @@
         }
     };
     window.spr = function (n, x, y, w, h, flipX, flipY) {
-        w = w || 1;
-        h = h || 1;
+        w = w !== undefined ? w : 1;
+        h = h !== undefined ? h : 1;
 
-        var spriteX = (n * SPRITE_WIDTH) % spritesheetRowLength;
-        var spriteY = flr(n / spritesheetSpritesPerRow) * SPRITE_HEIGHT;
-        var spriteW = spriteX + (SPRITE_WIDTH * w);
-        var spriteH = spriteY + (SPRITE_HEIGHT * h);
+        var spriteX = n;
+        var spriteY = n;
 
-        sspr(spriteX,
-             spriteY,
-             spriteW, spriteH,
-             x, y,
-             spriteW, spriteH,
-             flipX, flipY);
+        _.times(SPRITE_HEIGHT * h, function (yy) {
+            _.times(SPRITE_WIDTH * w, function (xx) {
+                var shiftX = flipX === true ? (SPRITE_WIDTH * w) - 1 - xx : xx;
+                var shiftY = flipY === true ? (SPRITE_HEIGHT * h) - 1 - yy : yy;
+                var row    = shiftY + (flr(n / spritesheetSpritesPerRow) * SPRITE_HEIGHT);
+                var column = ((n * SPRITE_WIDTH) + shiftX) % spritesheetRowLength
+                pset(x + xx, y + yy, spritesheet[row][column]);
+            });
+        });
     };
     window.sspr = function (sx, sy, sw, sh, dx, dy, dw, dh, flipX, flipY) {
         // reproduces pico behaviour
         if (dw !== undefined && dh === undefined) {
             dh = 0;
         } else {
-            dw = dw || sw;
-            dh = dh || sh;
+            dw = dw !== undefined ? dw : sw;
+            dh = dh !== undefined ? dh : sh;
         }
 
         var ratioX = sw / dw;
@@ -482,7 +475,7 @@
 
     // input
     window.btn = function (i, p) {
-        p = p || 0;
+        p = p !== undefined ? p : 0;
 
         if (i !== undefined) {
             return keysPressed[p][i];
@@ -492,7 +485,7 @@
         }
     };
     window.btnp = function (i, p) {
-        p = p || 0;
+        p = p !== undefined ? p : 0;
 
         function checkBtnActive(b) {
             return b[0] && (b[1] === 0 || (b[1] >= BUTTON_ACTIVE_DELAY && b[1] % BUTTON_ACTIVE_SLEEP === 0))
@@ -506,9 +499,25 @@
         }
     };
     // map
-    window.mget = function (x, y) {};
-    window.mset = function (x, y, v) {};
-    window.map = function (celX, celY, sx, sy, celW, celH, layer) {};
+    window.mget = function (x, y) {
+        try {
+            return mapSheet[y][x];
+        } catch(err) { return 0; }
+    };
+    window.mset = function (x, y, v) {
+        try {
+            mapSheet[y][x] = v;
+        } catch(err) {}
+    };
+    window.map = function (celX, celY, sx, sy, celW, celH, layer) {
+        // try {
+            _.times(celH, function (y) {
+                _.times(celW, function (x) {
+                    spr(mapSheet[y + celY][x + celX], x + sx, y + sy)
+                });
+            });
+        // } catch (err) {}
+    };
 
     // math
     window.max = Math.max;
@@ -553,12 +562,12 @@
             palette           = PICO_DEFAULT_COLORS_VALUES;
             currentColor      = PICO_INITIAL_COLOR;
             transparentColors = PICO_TRANSPARENT_COLORS;
-            mapBytes          = PICO_MAP_BYTES;
+            mapNumBytes          = PICO_MAP_BYTES;
         } else if (SYSTEM === 'SPICO-8') {
             palette           = PALETTE;
             currentColor      = INITIAL_COLOR;
             transparentColors = TRANSPARENT_COLOR;
-            mapBytes          = SPICO_MAP_BYTES;
+            mapNumBytes          = SPICO_MAP_BYTES;
         }
 
         // setup the retro display
@@ -608,16 +617,24 @@
         spritesheetSpritesPerRow = spritesheetRowLength / SPRITE_WIDTH;
 
         mapSheet = _.map(MAP, function (row) {
-            return _.map(_.chunk(row.split(''), mapBytes), function (cell) {
+            return _.map(_.chunk(row.split(''), mapNumBytes), function (cell) {
                 return parseInt(cell, 16);
             });
         });
         // pico-8 has the lower bytes in common with the spritesheet
+        // this will add the lower bytes of the spritesheet to the map sheet
+        // pico-8, for some reason, saves the data in the data in those bytes, when edited
+        // from the map editor, in *inverted* digits, so that for example 01 (1) is stored as 10
+        // this is ignored here.
+        // also, those bytes are not really shared here. modifying the spritesheet with sset does not
+        // affet the map data. also, modifying the map with mset does not affet the sprite sheet
         if (SYSTEM === 'PICO-8') {
-            // mapSheet = mapSheet.concat(_.takeRight(spritesheet, PICO_MAP_LOWER_BYTES_LINES))
-            // _.each(_.takeRight(spritesheet, PICO_MAP_LOWER_BYTES_LINES), function (l) {
-            //     mapSheet
-            // });
+            mapSheet = mapSheet.concat(_(spritesheet)
+                                       .takeRight(PICO_MAP_LOWER_BYTES_LINES)
+                                       .chunk(2)
+                                       .map(function (l) { return l[0].concat(l[1])})
+                                       .map(function (l) { return _.map(_.chunk(l, 2), function (c) { return parseInt(c, 16); }) })
+                                       .value());
         }
 
         colorDecoding = _.reduce(palette, function (acc, c, idx) {
