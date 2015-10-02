@@ -513,7 +513,9 @@
         // try {
             _.times(celH, function (y) {
                 _.times(celW, function (x) {
-                    spr(mapSheet[y + celY][x + celX], x + sx, y + sy)
+                    if (layer !== undefined && fget(mapSheet[celY + y][celX + x]) !== layer) return;
+
+                    spr(mapSheet[celY + y][celX + x], (x * SPRITE_WIDTH) + sx, (y * SPRITE_HEIGHT) + sy);
                 });
             });
         // } catch (err) {}
@@ -618,7 +620,7 @@
 
         mapSheet = _.map(MAP, function (row) {
             return _.map(_.chunk(row.split(''), mapNumBytes), function (cell) {
-                return parseInt(cell, 16);
+                return parseInt(cell.join(''), 16);
             });
         });
         // pico-8 has the lower bytes in common with the spritesheet
