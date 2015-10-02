@@ -220,6 +220,9 @@
 
     // graphics
     window.clip = function (x, y, w, h) {
+        x += cameraOffsetX;
+        y += cameraOffsetY;
+
         if (arguments.length === 0) {
             clipping = null;
         } else {
@@ -393,8 +396,8 @@
         line(x0, y1, x0, y0, c);
     };
     window.rectfill = function (x0, y0, x1, y1, c) {
-        _.each(_.range(y0, y1-y0 + 2), function (y) {
-            _.each(_.range(x0, x1-x0 + 2), function (x) {
+        _.each(_.range(y0, y1 + 1), function (y) {
+            _.each(_.range(x0, x1 + 1), function (x) {
                 pset(x, y, c);
             });
         });
