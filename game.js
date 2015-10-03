@@ -10,7 +10,7 @@ function _init() {
 function _update() {
     cls()
     // spr(1, 0, 0);
-    map(0, 0, 2, 2, 2, 3, 1);
+    line(10, 10, 40, 50, 5);
 }
 
 function _draw() {

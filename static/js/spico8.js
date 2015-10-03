@@ -386,10 +386,6 @@
         var yy = 0;
         var radiusError = 1 - xx;
 
-        var imageData = screenBitmap.imageData;
-        var data = imageData.data;
-        var index;
-
         while (xx >= yy) {
             line( xx + x,  yy + y, -xx + x,  yy + y, c);
             line( yy + x,  xx + y, -yy + x,  xx + y, c);
