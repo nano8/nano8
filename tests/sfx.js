@@ -1,3 +1,46 @@
+/////////////////
+// OSCILLATORS //
+/////////////////
+
+function AdditionalWavesInstrumentPack(name, audioContext) {
+    var types = ['pulse', 'bezier', 'bezier2'];
+
+    if (types.indexOf(name) === -1) {
+        throw new Error(name + ' is not a valid AdditionaWave type');
+    }
+
+    return {
+        createNote: function(destination, frequency) {
+            var o = audioContext.createOscillator();
+            var real, imag, table;
+
+            switch (name) {
+                case 'pulse':
+                    var real = new Float32Array([1, 0, 0.32, 0, 0.20, 0, 0.14, 0, 0.116, 0, 0.093, 0, 0.078, 0, 0.068, 0, 0.061, 0, 0.053, 0, 0.051, 0, 0.044, 0, 0.044, 0, 0.042, 0, 0.036, 0, 0.036, 0, 0.034, 0, 0.036, 0, 0.036, 0, 0.036, 0, 0.035, 0, 0.034, 0, 0.027, 0, 0.025, 0, 0.024, 0]);
+                    var imag = new Float32Array(real.length);
+                    var table = audioContext.createPeriodicWave(real, imag);
+                    o.setPeriodicWave(table)
+                    break;
+                case 'bezier':
+                    var real = new Float32Array([1, 0, 0.12, 0, 0.04, 0, 0.016, 0, 0.004, 0]);
+                    var imag = new Float32Array(real.length);
+                    var table = audioContext.createPeriodicWave(real, imag);
+                    o.setPeriodicWave(table)
+                    break;
+                case 'bezier2':
+                    var real = new Float32Array([0.994, 1, 0.916, 0.402, 0.045, 0.031, 0.039, 0.045, 0.017, 0.007, 0.006, 0.005]);
+                    var imag = new Float32Array(real.length);
+                    var table = audioContext.createPeriodicWave(real, imag);
+                    o.setPeriodicWave(table)
+                    break;
+            }
+            o.connect(destination);
+            o.frequency.value = frequency;
+
+            return o;
+        }
+    };
+}
 
 ////////////////
 // SFX EDITOR //
@@ -11,10 +54,13 @@ var CANVAS_BG_COLOR = '#000000';
 var BAR_COLOR       = '#A6A7AD';
 var BAR_NUM         = 32;
 var BAR_MAX_VAL     = 4000;
-var BAR_TYPE_COLORS = ['#FB002B', '#FD8208', '#FFFF0B', '#21EB2E', '#1B83FF', '#5C4B79', '#FC3D85'];
-var BAR_TYPES       = ['sine', 'square', 'sawtooth', 'triangle', 'white'];
+var BAR_TYPE_COLORS = ['#FB002B', '#FD8208', '#FFFF0B', '#21EB2E', '#1B83FF', '#5C4B79', '#FC3D85', '#FDB385'];
+var BAR_TYPES       = ['sine', 'square', 'sawtooth', 'triangle', 'white', 'pulse', 'bezier', 'bezier2'];
 var BAR_TYPES_PACKS = {
-    'white': 'noises'
+    'white':  'noises',
+    'pulse':  'morewaves',
+    'bezier': 'morewaves',
+    'bezier2': 'morewaves'
 }
 
 var OCTAVES = 8;
@@ -75,6 +121,8 @@ function init() {
         drawing = false;
     }
 
+    canvas.onmouseout = onmouseup;
+
     canvas.onmousemove = function(e){
         if(!drawing) return;
 
@@ -100,6 +148,8 @@ function init() {
             .flatten()
             .value();
     barNoteStep = BAR_MAX_VAL / notes.length;
+
+    BandJS.loadPack('instrument', 'morewaves', AdditionalWavesInstrumentPack);
 
     sfxPlayer = new BandJS();
     sfxPlayer.setTimeSignature(4,4);
