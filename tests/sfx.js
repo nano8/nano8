@@ -10,18 +10,33 @@ var CANVAS_BG_COLOR = '#000000';
 
 var BAR_COLOR       = '#A6A7AD';
 var BAR_NUM         = 32;
-var BAR_MAX_VAL     = 100;
-var BAR_TYPE_COLORS = [ '#FB002B', '#FD8208', '#FFFF0B', '#21EB2E', '#1B83FF', '#5C4B79', '#FC3D85'];
+var BAR_MAX_VAL     = 4000;
+var BAR_TYPE_COLORS = ['#FB002B', '#FD8208', '#FFFF0B', '#21EB2E', '#1B83FF', '#5C4B79', '#FC3D85'];
+var BAR_TYPES       = ['sine', 'square', 'sawtooth', 'triangle', 'white'];
+var BAR_TYPES_PACKS = {
+    'white': 'noises'
+}
+
+var OCTAVES = 8;
+var NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 
 var bars;
 var barWidth;
 var barType;
+
 var canvas;
 var ctx;
-
 var retroScreen;
 
+var notes;
+var barNoteStep;
+
 var drawing = false;
+
+var sfxPlayer;
+var sfxPlayerWaves;
+
+var tempo = 200;
 
 ///////////
 // UTILS //
@@ -80,6 +95,15 @@ function init() {
         return [BAR_MAX_VAL / 2, barType];
     });
 
+    notes = _(_.range(OCTAVES))
+            .map(function (o) { return _.map(NOTES, function (n) { return n + o;  }); })
+            .flatten()
+            .value();
+    barNoteStep = BAR_MAX_VAL / notes.length;
+
+    sfxPlayer = new BandJS();
+    sfxPlayer.setTimeSignature(4,4);
+
     drawBars();
 }
 
@@ -96,6 +120,30 @@ function drawBars() {
     });
 
     retroScreen.draw();
+}
+
+function makeSfx (bars) {
+    sfxPlayer.instruments = [];
+    sfxPlayer.setTempo(tempo);
+
+    sfxPlayerWaves = _.map(BAR_TYPES, function (b) {
+        var pack = 'oscillators';
+        if (BAR_TYPES_PACKS[b]) pack = BAR_TYPES_PACKS[b];
+
+        return sfxPlayer.createInstrument(b, pack);
+    });
+
+    _.each(bars, function (b) {
+        var note = Math.floor(b[0] / barNoteStep);
+
+        _.each(sfxPlayerWaves, function (w, i) {
+            if (w === sfxPlayerWaves[b[1]]) sfxPlayerWaves[b[1]].note('thirtySecond', notes[note]);
+            else w.rest('thirtySecond');
+        });
+
+    });
+
+    return sfxPlayer.finish();
 }
 
 window.onload = init;
