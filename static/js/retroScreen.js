@@ -4,9 +4,12 @@
 
 (function () {
     function RetroScreen (canvas) {
+        var self = this;
+
         this.canvas = canvas;
         this.ctx    = canvas.getContext("2d");
         this.ctx.imageSmoothingEnabled = false;
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height, '#ffffff');
         this.canvas.style['display'] = 'none';
 
         // setup retrodisplay
@@ -22,7 +25,7 @@
         this.canvas.parentNode.insertBefore(this.retroDisplay.canvas, this.canvas.nextSibling);
 
         this.data   = _.map(_.range(this.canvas.height), function () {
-            return _.map(_.range(this.canvas.width), function () {
+            return _.map(_.range(self.canvas.width), function () {
                 return [0, 0, 0];
             });
         });
