@@ -1,3 +1,15 @@
+// output format
+// 00
+// 2 speed
+// 2 loop start
+// 2 loop end
+// [4]
+//     2 freq
+//     1 instrument
+//     1 vol
+
+
+
 /////////////////
 // OSCILLATORS //
 /////////////////
@@ -42,48 +54,6 @@ function AdditionalWavesInstrumentPack(name, audioContext) {
     };
 }
 
-////////////////
-// SFX EDITOR //
-////////////////
-
-var CANVAS_WIDTH  = 450;
-var CANVAS_HEIGHT = 300;
-
-var CANVAS_BG_COLOR = '#000000';
-
-var BAR_COLOR       = '#A6A7AD';
-var BAR_NUM         = 32;
-var BAR_MAX_VAL     = 4000;
-var BAR_TYPE_COLORS = ['#FB002B', '#FD8208', '#FFFF0B', '#21EB2E', '#1B83FF', '#5C4B79', '#FC3D85', '#FDB385'];
-var BAR_TYPES       = ['sine', 'square', 'sawtooth', 'triangle', 'white', 'pulse', 'bezier', 'bezier2'];
-var BAR_TYPES_PACKS = {
-    'white':  'noises',
-    'pulse':  'morewaves',
-    'bezier': 'morewaves',
-    'bezier2': 'morewaves'
-}
-
-var OCTAVES = 8;
-var NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
-
-var bars;
-var barWidth;
-var barType;
-
-var canvas;
-var ctx;
-var retroScreen;
-
-var notes;
-var barNoteStep;
-
-var drawing = false;
-
-var sfxPlayer;
-var sfxPlayerWaves;
-
-var tempo = 200;
-
 ///////////
 // UTILS //
 ///////////
@@ -96,6 +66,60 @@ function hexToRgb(hex) {
         parseInt(result[3], 16)
     ] : [0, 0, 0];
 }
+
+////////////////
+// SFX EDITOR //
+////////////////
+
+var CANVAS_WIDTH  = 450;
+var CANVAS_HEIGHT = 300;
+
+var CANVAS_BG_COLOR = '#000000';
+
+var BAR_COLOR       = hexToRgb('#A6A7AD');
+var BAR_NUM         = 32;
+var BAR_MAX_VAL     = 4000;
+var BAR_TYPE_COLORS = [hexToRgb('#FB002B'), hexToRgb('#FD8208'), hexToRgb('#FFFF0B'), hexToRgb('#21EB2E'), hexToRgb('#1B83FF'), hexToRgb('#5C4B79'), hexToRgb('#FC3D85'), hexToRgb('#FDB385')];
+var BAR_TYPES       = ['sine', 'square', 'sawtooth', 'triangle', 'white', 'pulse', 'bezier', 'bezier2'];
+var BAR_TYPES_PACKS = {
+    'white':  'noises',
+    'pulse':  'morewaves',
+    'bezier': 'morewaves',
+    'bezier2': 'morewaves'
+}
+var BAR_UI_PERCENTAGE    = 70;
+var BAR_TYPE_DEFAULT     = 0;
+
+var VOLUME_COLOR         = BAR_COLOR;
+var VOLUME_UI_PERCENTAGE = 25;
+var VOLUME_DEFAULT       = 7;
+var VOLUME_MAX_VAL       = 7;
+
+var OCTAVES = 8;
+var NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+
+var bars;
+var barWidth;
+var barType;
+var barUiHeight;
+var barUiSpaceBetweenScreens;
+var barDrawing;
+
+var volumeDrawing;
+var volumeUiHeight;
+
+var canvas;
+var ctx;
+var retroScreen;
+
+var notes;
+var barNoteStep;
+
+
+var sfxPlayer;
+var sfxPlayerWaves;
+
+var tempo = 200;
 
 //////////
 // CORE //
@@ -111,37 +135,59 @@ function init() {
     ctx.fillStyle = CANVAS_BG_COLOR;
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
+    barDrawing    = false;
+    volumeDrawing = false;
+
     canvas.onmousedown = function (e) {
-        drawing = true;
+        if (e.layerY < barUiHeight) barDrawing = true;
+        if (e.layerY > barUiHeight + barUiSpaceBetweenScreens) volumeDrawing = true;
 
         canvas.onmousemove(e);
     };
 
     canvas.onmouseup = function (e) {
-        drawing = false;
+        barDrawing = false;
+        volumeDrawing = false;
+    };
+
+    canvas.onmouseout = function (e) {
+        barDrawing = false;
+        volumeDrawing = false;
     }
 
-    canvas.onmouseout = onmouseup;
-
     canvas.onmousemove = function(e){
-        if(!drawing) return;
-
         var bar     = Math.floor(e.layerX / barWidth) / 2;
         var isOnBar = bar === Math.floor(bar);
 
-        bars[bar] =  [((BAR_MAX_VAL * (CANVAS_HEIGHT - e.layerY)) / CANVAS_HEIGHT), barType]
+        if (barDrawing) {
+            if (e.layerY >= barUiHeight || !isOnBar) return;
+            bars[bar] =  [Math.floor(Math.max(3, ((BAR_MAX_VAL * (barUiHeight - e.layerY)) / barUiHeight))), barType, bars[bar][2]];
+            draw();
+        }
 
-        drawBars();
+        if (volumeDrawing) {
+            if (!isOnBar) return;
+            var newVolume = Math.floor((volumeUiHeight - (e.layerY - (barUiHeight + barUiSpaceBetweenScreens))) / (volumeUiHeight / VOLUME_MAX_VAL));
+            if (newVolume > VOLUME_MAX_VAL) newVolume = VOLUME_MAX_VAL;
+            bars[bar] =  [bars[bar][0], bars[bar][1],  newVolume];
+            draw();
+        }
+
+
     }
 
     retroScreen = new RetroScreen(canvas);
 
     barWidth = CANVAS_WIDTH / (BAR_NUM * 2)
-    barType  = 0;
+    barType  = BAR_TYPE_DEFAULT;
 
     bars = _.map(_.range(BAR_NUM), function (b) {
-        return [BAR_MAX_VAL / 2, barType];
+        return [BAR_MAX_VAL / 2, barType, VOLUME_DEFAULT];
     });
+
+    barUiHeight              = CANVAS_HEIGHT * (BAR_UI_PERCENTAGE / 100);
+    barUiSpaceBetweenScreens = CANVAS_HEIGHT * ((100 - BAR_UI_PERCENTAGE - VOLUME_UI_PERCENTAGE) / 100);
+    volumeUiHeight           = CANVAS_HEIGHT * (VOLUME_UI_PERCENTAGE / 100);
 
     notes = _(_.range(OCTAVES))
             .map(function (o) { return _.map(NOTES, function (n) { return n + o;  }); })
@@ -154,19 +200,24 @@ function init() {
     sfxPlayer = new BandJS();
     sfxPlayer.setTimeSignature(4,4);
 
-    drawBars();
+    draw();
 }
 
-function drawBars() {
+function draw() {
     retroScreen.clear();
 
     // draw bars
     _.times(BAR_NUM, function (b) {
-        var bar       = bars[b];
-        var barHeight = (CANVAS_HEIGHT * bar[0]) / BAR_MAX_VAL;
+        var bar          = bars[b];
+        var barHeight    = (barUiHeight * bar[0]) / BAR_MAX_VAL;
+        var volumeHeight = (volumeUiHeight * bar[2]) / VOLUME_MAX_VAL;
 
-        retroScreen.fillRect((b * barWidth) + (barWidth * b), CANVAS_HEIGHT, barWidth, -barHeight, hexToRgb(BAR_COLOR));
-        retroScreen.fillRect((b * barWidth) + (barWidth * b), CANVAS_HEIGHT - barHeight, barWidth, 5, hexToRgb(BAR_TYPE_COLORS[bar[1]]));
+        // frequency bar
+        retroScreen.fillRect((b * barWidth) + (barWidth * b), barUiHeight, barWidth, -barHeight, BAR_COLOR);
+        // frequency bar color
+        retroScreen.fillRect((b * barWidth) + (barWidth * b), barUiHeight - barHeight, barWidth, 5, BAR_TYPE_COLORS[bar[1]]);
+        // volume
+        retroScreen.fillRect((b * barWidth) + (barWidth * b), barUiHeight + barUiSpaceBetweenScreens + volumeUiHeight - volumeHeight, barWidth, -5, VOLUME_COLOR);
     });
 
     retroScreen.draw();
@@ -187,8 +238,12 @@ function makeSfx (bars) {
         var note = Math.floor(b[0] / barNoteStep);
 
         _.each(sfxPlayerWaves, function (w, i) {
-            if (w === sfxPlayerWaves[b[1]]) sfxPlayerWaves[b[1]].note('thirtySecond', notes[note]);
-            else w.rest('thirtySecond');
+            if (w === sfxPlayerWaves[b[1]]) {
+                sfxPlayerWaves[b[1]].setVolume(b[2]);
+                sfxPlayerWaves[b[1]].note('thirtySecond', notes[note]);
+            } else {
+                w.rest('thirtySecond');
+            }
         });
 
     });
