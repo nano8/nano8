@@ -6,13 +6,27 @@
     function RetroScreen (canvas) {
         this.canvas = canvas;
         this.ctx    = canvas.getContext("2d");
+        this.ctx.imageSmoothingEnabled = false;
+        this.canvas.style['display'] = 'none';
+
+        // setup retrodisplay
+        this.retroDisplay                              = { scale: 4, canvas: null, context: null, width: 0, height: 0 };
+        this.retroDisplay.width                        = this.canvas.width * this.retroDisplay.scale;
+        this.retroDisplay.height                       = this.canvas.height * this.retroDisplay.scale;
+        this.retroDisplay.canvas                       = document.createElement('canvas');
+        this.retroDisplay.canvas.width                 = this.canvas.width  * this.retroDisplay.scale;
+        this.retroDisplay.canvas.height                = this.canvas.height * this.retroDisplay.scale;
+        this.retroDisplay.context                      = this.retroDisplay.canvas.getContext('2d');
+        this.retroDisplay.context.imageSmoothingEnabled = false;
+
+        this.canvas.parentNode.insertBefore(this.retroDisplay.canvas, this.canvas.nextSibling);
+
         this.data   = _.map(_.range(this.canvas.height), function () {
             return _.map(_.range(this.canvas.width), function () {
                 return [0, 0, 0];
             });
         });
         this.imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
-        // this.imageDataData = this.imageData.data;
     }
 
     RetroScreen.prototype =  {
@@ -135,6 +149,8 @@
 
             };
             this.ctx.putImageData(this.imageData, 0, 0);
+
+            this.retroDisplay.context.drawImage(this.canvas, 0, 0, this.canvas.width, this.canvas.height, 0, 0, this.retroDisplay.width, this.retroDisplay.height);
         },
     };
 
