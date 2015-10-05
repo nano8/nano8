@@ -79,7 +79,7 @@ var CANVAS_BG_COLOR = '#000000';
 var BAR_COLOR       = hexToRgb('#A6A7AD');
 var BAR_NUM         = 32;
 var BAR_MAX_VAL     = 4000;
-var BAR_TYPE_COLORS = [hexToRgb('#FB002B'), hexToRgb('#FD8208'), hexToRgb('#FFFF0B'), hexToRgb('#21EB2E'), hexToRgb('#1B83FF'), hexToRgb('#5C4B79'), hexToRgb('#FC3D85'), hexToRgb('#FDB385')];
+var BAR_TYPE_COLORS = [hexToRgb('#FB002B'), hexToRgb('#FD8208'), hexToRgb('#FFF300'), hexToRgb('#21EB2E'), hexToRgb('#1B83FF'), hexToRgb('#5C4B79'), hexToRgb('#FC3D85'), hexToRgb('#FDB385')];
 var BAR_TYPES       = ['sine', 'square', 'sawtooth', 'triangle', 'white', 'pulse', 'bezier', 'bezier2'];
 var BAR_TYPES_PACKS = {
     'white':  'noises',
