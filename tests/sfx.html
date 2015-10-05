@@ -31,6 +31,16 @@
                 sfx.play();
                 sfx = null;
             });
+
+            $('#export').on('click', function () {
+                console.log(exportSfx(bars));
+            });
+
+            $('#import').on('click', function () {
+                console.log(importSfx('00c80000031707100b100f10151118111c11201106400b400f40134117411a421e4221472443505349524154395332543054265421551a56155611560d56095605563007'));
+                draw();
+            });
+
         });
     </script>
 </head>
@@ -44,8 +54,13 @@
     <button class="select-wave" data-wave="6">Bezier</button>
     <button class="select-wave" data-wave="7">Bezier2</button>
 
+
     <div><button id="play">Play</button></div>
+    <div><button id="export">Export</button></div>
+    <div><button id="import">Import</button></div>
     <div>Speed <input id="speed" type="text" value="200"> </div>
+    <div>Lopo Start <input id="loop-start" type="text" value="0"> </div>
+    <div>Loop End <input id="loop-end" type="text" value="0"> </div>
 
     <div id="current-wave">sine</div>
 </body>

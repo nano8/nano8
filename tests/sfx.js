@@ -107,6 +107,7 @@ var barDrawing;
 
 var volumeDrawing;
 var volumeUiHeight;
+var volumeStep;
 
 var canvas;
 var ctx;
@@ -161,13 +162,16 @@ function init() {
 
         if (barDrawing) {
             if (e.layerY >= barUiHeight || !isOnBar) return;
-            bars[bar] =  [Math.floor(Math.max(3, ((BAR_MAX_VAL * (barUiHeight - e.layerY)) / barUiHeight))), barType, bars[bar][2]];
+            var frequency = Math.max(3, ((BAR_MAX_VAL * (barUiHeight - e.layerY)) / barUiHeight));
+            var note      = Math.floor(frequency / barNoteStep);
+
+            bars[bar] = [note, barType, bars[bar][2]];
             draw();
         }
 
         if (volumeDrawing) {
             if (!isOnBar) return;
-            var newVolume = Math.floor((volumeUiHeight - (e.layerY - (barUiHeight + barUiSpaceBetweenScreens))) / (volumeUiHeight / VOLUME_MAX_VAL));
+            var newVolume = Math.floor((volumeUiHeight - (e.layerY - (barUiHeight + barUiSpaceBetweenScreens))) / volumeStep);
             if (newVolume > VOLUME_MAX_VAL) newVolume = VOLUME_MAX_VAL;
             bars[bar] =  [bars[bar][0], bars[bar][1],  newVolume];
             draw();
@@ -178,21 +182,24 @@ function init() {
 
     retroScreen = new RetroScreen(canvas);
 
-    barWidth = CANVAS_WIDTH / (BAR_NUM * 2)
-    barType  = BAR_TYPE_DEFAULT;
-
-    bars = _.map(_.range(BAR_NUM), function (b) {
-        return [BAR_MAX_VAL / 2, barType, VOLUME_DEFAULT];
-    });
-
-    barUiHeight              = CANVAS_HEIGHT * (BAR_UI_PERCENTAGE / 100);
-    barUiSpaceBetweenScreens = CANVAS_HEIGHT * ((100 - BAR_UI_PERCENTAGE - VOLUME_UI_PERCENTAGE) / 100);
-    volumeUiHeight           = CANVAS_HEIGHT * (VOLUME_UI_PERCENTAGE / 100);
-
     notes = _(_.range(OCTAVES))
             .map(function (o) { return _.map(NOTES, function (n) { return n + o;  }); })
             .flatten()
             .value();
+
+    barWidth = CANVAS_WIDTH / (BAR_NUM * 2)
+    barType  = BAR_TYPE_DEFAULT;
+
+    bars = _.map(_.range(BAR_NUM), function (b) {
+        return [Math.floor(notes.length / 2), barType, VOLUME_DEFAULT];
+    });
+
+    barUiHeight              = CANVAS_HEIGHT * (BAR_UI_PERCENTAGE / 100);
+    barUiSpaceBetweenScreens = CANVAS_HEIGHT * ((100 - BAR_UI_PERCENTAGE - VOLUME_UI_PERCENTAGE) / 100);
+
+    volumeUiHeight = CANVAS_HEIGHT * (VOLUME_UI_PERCENTAGE / 100);
+    volumeStep     = volumeUiHeight / VOLUME_MAX_VAL;
+
     barNoteStep = BAR_MAX_VAL / notes.length;
 
     BandJS.loadPack('instrument', 'morewaves', AdditionalWavesInstrumentPack);
@@ -209,7 +216,7 @@ function draw() {
     // draw bars
     _.times(BAR_NUM, function (b) {
         var bar          = bars[b];
-        var barHeight    = (barUiHeight * bar[0]) / BAR_MAX_VAL;
+        var barHeight    = (barUiHeight * (bar[0] * barNoteStep)) / BAR_MAX_VAL;
         var volumeHeight = (volumeUiHeight * bar[2]) / VOLUME_MAX_VAL;
 
         // frequency bar
@@ -235,12 +242,10 @@ function makeSfx (bars) {
     });
 
     _.each(bars, function (b) {
-        var note = Math.floor(b[0] / barNoteStep);
-
         _.each(sfxPlayerWaves, function (w, i) {
             if (w === sfxPlayerWaves[b[1]]) {
                 sfxPlayerWaves[b[1]].setVolume(b[2]);
-                sfxPlayerWaves[b[1]].note('thirtySecond', notes[note]);
+                sfxPlayerWaves[b[1]].note('thirtySecond', notes[b[0]]);
             } else {
                 w.rest('thirtySecond');
             }
@@ -250,5 +255,30 @@ function makeSfx (bars) {
 
     return sfxPlayer.finish();
 }
+
+function exportSfx (bars) {
+    return '00'
+        + _.padLeft(parseInt($('#speed').val()).toString(16), 2, '0')
+        + _.padLeft(parseInt($('#loop-start').val()).toString(16), 2, '0')
+        + _.padLeft(parseInt($('#loop-end').val()).toString(16), 2, '0')
+        + _.map(bars, function (b) {
+            return _.padLeft(b[0].toString(16), 2, '0') + b[1].toString(16) + b[2].toString(16);
+          }).join('');
+}
+
+function importSfx (str) {
+    $('#speed').val(parseInt(str.substr(2, 2), 16));
+    $('#loop-start').val(parseInt(str.substr(4, 2), 16));
+    $('#loop-end').val(parseInt(str.substr(6, 2), 16));
+    bars = _(str.substr(8))
+           .chunk(4)
+           .map(function (b) {
+                b = b.join('');
+
+                return [parseInt(b.substr(0, 2), 16), parseInt(b.substr(2, 1), 16), parseInt(b.substr(3, 1), 16)];
+           })
+           .value();
+}
+
 
 window.onload = init;
