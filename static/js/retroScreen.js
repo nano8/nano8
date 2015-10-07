@@ -3,24 +3,33 @@
 //////////////
 
 (function () {
+    var SCALE_FACTOR = 4;
+
     function RetroScreen (canvas) {
         var self = this;
 
-        this.canvas = canvas;
-        this.ctx    = canvas.getContext("2d");
+        this.canvas = canvas instanceof jQuery ? canvas.get(0) : canvas;
+        this.ctx    = this.canvas.getContext("2d");
         this.ctx.imageSmoothingEnabled = false;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height, '#ffffff');
         this.canvas.style['display'] = 'none';
 
         // setup retrodisplay
-        this.retroDisplay                              = { scale: 4, canvas: null, context: null, width: 0, height: 0 };
-        this.retroDisplay.width                        = this.canvas.width * this.retroDisplay.scale;
-        this.retroDisplay.height                       = this.canvas.height * this.retroDisplay.scale;
-        this.retroDisplay.canvas                       = document.createElement('canvas');
-        this.retroDisplay.canvas.width                 = this.canvas.width  * this.retroDisplay.scale;
-        this.retroDisplay.canvas.height                = this.canvas.height * this.retroDisplay.scale;
-        this.retroDisplay.context                      = this.retroDisplay.canvas.getContext('2d');
+        this.retroDisplay                               = { scale: SCALE_FACTOR, canvas: null, context: null, width: 0, height: 0 };
+        this.retroDisplay.width                         = this.canvas.width * this.retroDisplay.scale;
+        this.retroDisplay.height                        = this.canvas.height * this.retroDisplay.scale;
+        this.retroDisplay.canvas                        = document.createElement('canvas');
+        this.retroDisplay.canvas.style['background']    = '#000000';
+        this.retroDisplay.canvas.className              = 'retro-screen';
+        this.retroDisplay.canvas.style.cursor           = 'pointer';
+        this.retroDisplay.canvas.width                  = this.canvas.width  * this.retroDisplay.scale;
+        this.retroDisplay.canvas.height                 = this.canvas.height * this.retroDisplay.scale;
+        this.retroDisplay.context                       = this.retroDisplay.canvas.getContext('2d');
         this.retroDisplay.context.imageSmoothingEnabled = false;
+        this.realWidth                                  = this.retroDisplay.canvas.width;
+        this.realHeight                                 = this.retroDisplay.canvas.height;
+        this.width                                      = this.canvas.width;
+        this.height                                     = this.canvas.height;
 
         this.canvas.parentNode.insertBefore(this.retroDisplay.canvas, this.canvas.nextSibling);
 
@@ -30,12 +39,51 @@
             });
         });
         this.imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+
+        // remap mouse events
+        this.onmousemove = function () {};
+        this.retroDisplay.canvas.onmousemove = function (e) {
+            e.retroLayerX = e.layerX / 4
+            e.retroLayerY = e.layerY / 4
+            self.onmousemove(e);
+        };
+
+        this.onmousedown = function () {};
+        this.retroDisplay.canvas.onmousedown = function (e) {
+            e.retroLayerX = e.layerX / 4
+            e.retroLayerY = e.layerY / 4
+            self.onmousedown(e);
+        };
+
+        this.onmouseup = function () {};
+        this.retroDisplay.canvas.onmouseup = function (e) {
+            e.retroLayerX = e.layerX / 4
+            e.retroLayerY = e.layerY / 4
+            self.onmouseup(e);
+        };
+
+        this.onmouseout = function () {};
+        this.retroDisplay.canvas.onmouseout = function (e) {
+            e.retroLayerX = e.layerX / 4
+            e.retroLayerY = e.layerY / 4
+            self.onmouseout(e);
+        };
+
+        this.onmouseover = function () {};
+        this.retroDisplay.canvas.onmouseover = function (e) {
+            e.retroLayerX = e.layerX / 4
+            e.retroLayerY = e.layerY / 4
+            self.onmouseover(e);
+        };
+
     }
 
     RetroScreen.prototype =  {
         clear: function () {
-            this.data = _.map(_.range(this.canvas.height), function () {
-                return _.map(_.range(this.canvas.width), function () {
+            var self = this;
+
+            this.data = _.map(_.range(self.canvas.height), function () {
+                return _.map(_.range(self.canvas.width), function () {
                     return [0, 0, 0];
                 });
             });
@@ -47,6 +95,13 @@
         },
         line: function (x0, y0, x1, y1, c) {
             // bresenham midpoint circle algorithm to draw a pixel-perfect line
+
+            if (x0 === undefined || y0 === undefined || x1 === undefined || y1 === undefined) return;
+
+            x0 = Math.floor(x0);
+            y0 = Math.floor(y0);
+            x1 = Math.floor(x1);
+            y1 = Math.floor(y1);
 
             var dx = Math.abs(x1 - x0);
             var dy = Math.abs(y1 - y0);

@@ -83,7 +83,8 @@
     // the screensize must be initialized early because it is used to instantiate the game
     var screenWidth;
     var screenHeight;
-    if (SYSTEM === 'PICO-8') {
+
+    if (window.SYSTEM !== undefined && SYSTEM === 'PICO-8') {
         screenWidth  = PICO_SCREEN_WIDTH;
         screenHeight = PICO_SCREEN_HEIGHT;
     }
@@ -135,17 +136,19 @@
     var keysPressedP;
 
     // setup the game
-    var game  = new Phaser.Game(screenWidth, screenHeight,
-                                Phaser.CANVAS,
-                                '',
-                                {
-                                     init:    init,
-                                     preload: preload,
-                                     update:  update,
-                                     render:  render
-                                 },
-                                 false, false);
-    var retroDisplay = { scale: SCALE_FACTOR, canvas: null, context: null, width: 0, height: 0 };
+    if (window.Phaser !== undefined) {
+        var game  = new Phaser.Game(screenWidth, screenHeight,
+                                    Phaser.CANVAS,
+                                    '',
+                                    {
+                                         init:    init,
+                                         preload: preload,
+                                         update:  update,
+                                         render:  render
+                                     },
+                                     false, false);
+        var retroDisplay = { scale: SCALE_FACTOR, canvas: null, context: null, width: 0, height: 0 };
+    }
 
     // INNER FUNCTIONS
     // generate the color remappings out the palette
@@ -584,6 +587,12 @@
     window.shl = function (x, y) { return x << y; };
     window.shr = function (x, y) { return x >> y; };
 
+    // new functions not in pico-8
+    // normalizes number val (that is in range oldMin - oldMax) in the range nuwMin - newMax
+    window.normalize = function (val, oldMin, oldMax, newMin, newMax) {
+        return (((val - oldMin) * (newMax - newMin)) / (oldMax - oldMin)) + newMin;
+    };
+
     // GAME LOOP FUNCTIONS
     function preload () {
 
@@ -727,5 +736,13 @@
 
         // show the retro display
         retroDisplay.context.drawImage(game.canvas, 0, 0, game.width, game.height, 0, 0, retroDisplay.width, retroDisplay.height);
+    }
+
+    ////////////////////
+    // EXPOSED OBJECT //
+    ////////////////////
+
+    window.Spico = {
+        PICO_DEFAULT_COLORS_VALUES: PICO_DEFAULT_COLORS_VALUES
     }
 })(this);
