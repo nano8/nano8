@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SPICO-8 Tracker</title>
+
+    <script src="../static/js/lib/lodash.min.js"></script>
+    <script src="../static/js/lib/jQuery.min.js"></script>
+    <script src="../static/js/lib/waaclock.js"></script>
+    <script src="../static/js/retroScreen.js"></script>
+    <script src="../static/js/retroSound.js"></script>
+    <script src="../static/js/spico8.js"></script>
+    <script src="tracker.js"></script>
+
+    <script>
+        $(function () {
+            var tracker = new EditorTracker($('.editor-tracker'));
+        })
+    </script>
+
+    <link rel="stylesheet" href="../static/css/tracker.css">
+</head>
+<body>
+    <div class="editor">
+        <div class="header">
+            <div class="pages"></div>
+        </div>
+        <div class="editor-tracker">
+            <div class="page sampler">
+                <canvas class="waveform" width="152" height="80"></canvas>
+
+                <div class="tabs">
+                    <div class="tabs-switch">
+                        <div class="switch selected" data-panel="wave">WAV</div>
+                        <div class="switch" data-panel="volume">VOL</div>
+                        <div class="switch" data-panel="vibrato">MOD</div>
+                        <div class="switch" data-panel="arpeggio">ARP</div>
+                    </div>
+                    <div class="panels">
+                        <div class="panel selected" data-panel="wave">
+                            <div class="wave-types">
+                                <div class="label">Wave Type</div>
+                                <div class="wave-type sin selected" data-wave="0"></div>
+                                <div class="wave-type square" data-wave="1"></div>
+                                <div class="wave-type saw" data-wave="2"></div>
+                                <div class="wave-type triangle" data-wave="3"></div>
+                                <div class="wave-type noise" data-wave="4"></div>
+                            </div>
+                        </div>
+                        <div class="panel" data-panel="volume"></div>
+                        <div class="panel" data-panel="mod"></div>
+                        <div class="panel" data-panel="arp"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

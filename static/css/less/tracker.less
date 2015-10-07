@@ -1,3 +1,14 @@
+@image-ui-tab-height:  28px;
+@image-ui-wave-width:  28px;
+@image-ui-wave-height: 20px;
+
+@pico-color-orange:    #FF9300;
+@pico-color-violet:    #70608B;
+@pico-color-black:     #000000;
+@pico-color-yellow:    #FFF300;
+@pico-color-dark-grey: #4C453E;
+@pico-color-brown:     #9B3E26;
+
 @font-face {
     font-family: 'kongtextregular';
     src: url('../fnt/kongtext-webfont.eot');
@@ -13,12 +24,12 @@
 }
 body, html {
     font-family: 'kongtextregular';
-    color: #FF9300;
+    color: @pico-color-orange;
 }
 .header {
     width:      640px;
     height:     32px;
-    background: #FF9300;
+    background: @pico-color-orange;
 }
 .editor {
     width:  640px;
@@ -28,12 +39,12 @@ body, html {
         .page.sampler {
             width:      640px;
             height:     544px;
-            background: #70608B;
+            background: @pico-color-violet;
 
             .waveform {
                 width:       152px; /* 632*/
                 height:      80px; /* 496 */
-                background:  #000000;
+                background:  @pico-color-black;
             }
             .retro-screen {
                 margin-left: 16px;
@@ -48,11 +59,70 @@ body, html {
                 .panels {
                     height:     96px;
                     width:      600px;
-                    background: #FFF300;
-                    border:     4px solid #FF9300;
+                    background: @pico-color-yellow;
+                    border:     4px solid @pico-color-orange;
+
+                    .panel {
+                        width:       584px;
+                        height:      80px;
+                        margin-top:  8px;
+                        margin-left: 8px;
+                        display:     none;
+
+                        &.selected {
+                            display: block;
+                        }
+
+                        &[data-panel="wave"] {
+                            .wave-types {
+                                .label {
+                                    color: @pico-color-brown;
+                                    margin-bottom: 16px;
+                                }
+                                .wave-type {
+                                    width:            @image-ui-wave-width;
+                                    height:           @image-ui-wave-height;
+                                    background-image: url(../img/editor-ui.png);
+                                    display:          inline-block;
+                                    margin-right:     -8px;
+
+                                    &.sin {
+                                        background-position: 0 -@image-ui-tab-height;
+                                        &.selected {
+                                            background-position: 0 -@image-ui-tab-height - @image-ui-wave-height;
+                                        }
+                                    }
+                                    &.square {
+                                        background-position: -@image-ui-tab-height -@image-ui-tab-height;
+                                        &.selected {
+                                            background-position: -@image-ui-tab-height -@image-ui-tab-height - @image-ui-wave-height;
+                                        }
+                                    }
+                                    &.saw {
+                                        background-position: -@image-ui-tab-height * 2 -@image-ui-tab-height;
+                                        &.selected {
+                                            background-position: -@image-ui-tab-height * 2 -@image-ui-tab-height - @image-ui-wave-height;
+                                        }
+                                    }
+                                    &.triangle {
+                                        background-position: -@image-ui-tab-height * 3 -@image-ui-tab-height;
+                                        &.selected {
+                                            background-position: -@image-ui-tab-height * 3 -@image-ui-tab-height - @image-ui-wave-height;
+                                        }
+                                    }
+                                    &.noise {
+                                        background-position: -@image-ui-tab-height * 4 -@image-ui-tab-height;
+                                        &.selected {
+                                            background-position: -@image-ui-tab-height * 4 -@image-ui-tab-height - @image-ui-wave-height;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
                 .tabs-switch {
-                    height:     28px;
+                    height:     @image-ui-tab-height;
                     width:      600px;
                     margin-bottom: -4px;
 
