@@ -82,10 +82,10 @@ html {
 .editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="wave"] .wave-types .wave-type.square.selected {
   background-position: -28px -48px;
 }
-.editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="wave"] .wave-types .wave-type.saw {
+.editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="wave"] .wave-types .wave-type.sawtooth {
   background-position: -56px -28px;
 }
-.editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="wave"] .wave-types .wave-type.saw.selected {
+.editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="wave"] .wave-types .wave-type.sawtooth.selected {
   background-position: -56px -48px;
 }
 .editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="wave"] .wave-types .wave-type.triangle {

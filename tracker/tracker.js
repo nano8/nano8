@@ -22,12 +22,15 @@
         this.waveformEditor        = new RetroScreen(this.$waveformEditorCanvas);
         this.waveformEditor.clear();
 
-        // create soundchip
+        // audio functions
+        this.playingSound = null;
+        this.selectedInstrument = 0;
+
+        // create the soundchip
         this.soundchip = new RetroSound();
         this.soundchip.addInstruments(DEFAULT_INSTRUMENTS);
 
-        this.selectedInstrument = 0;
-
+        // interface events canvas
         this.waveformEditor.onmousedown = function (e) {
         }
 
@@ -38,15 +41,22 @@
         }
 
         this.waveformEditor.onmousemove = function (e) {
-
         }
 
-        // audio functions
-        this.playingSound = null;
+        // interface events - wave tab
+        $('.wave-type').on('click', function () {
+            self.soundchip.instruments[self.selectedInstrument].osctype = $(this).attr('data-wave');
+            $('.wave-type').removeClass('selected');
+            $(this).addClass('selected');
+            self.drawWaveform();
+        });
 
+        // interface keyboard events
         window.onkeyup = function (e) {
             if (e.keyCode == 32) self.toggleSound();
         };
+
+        // done, draw the waveform
         this.drawWaveform();
     };
 
@@ -69,7 +79,7 @@
                     lastY = lastY === undefined ? self.waveformEditor.height / 2 : lastY;
                     lastX = lastX === undefined ? 0 : lastX;
 
-                    switch (self.selectedInstrument.osctype) {
+                    switch (self.soundchip.instruments[self.selectedInstrument].osctype) {
                         case RetroSound.OSC_TYPES.SINE:
                             y = (Math.sin(x / 9.62) * self.waveformEditor.height / 2) + self.waveformEditor.height / 2;
                             break;
@@ -106,24 +116,6 @@
                 this.soundchip.stopOscillator(this.playingSound.osc, this.playingSound.instrument);
                 this.playingSound = null;
             }
-
-            //     var buffer = this.sampleContext.createBuffer(1, this.samplesNum, 8000);
-            //     // var buffer = this.sampleContext.createBuffer(1, this.samplesNum, SAMPLE_RATE);
-            //     var normalizedSamples = _.map(this.waveformPoints, function (p) {
-            //         return normalize(p, SAMPLE_MIN, SAMPLE_MAX, -1, 1);
-            //     })
-            //     buffer.copyToChannel(new Float32Array(this.waveformPoints), 0);
-
-            //     this.playingSound = this.sampleContext.createBufferSource();
-            //     this.playingSound.buffer = buffer;
-            //     this.playingSound.connect(this.sampleContext.destination);
-            //     this.playingSound.loop = true;
-            //     this.playingSound.start();
-            //     this.isPlaying = true;
-            // } else {
-            //     this.playingSound.stop();
-            //     this.isPlaying = false;
-            // }
         }
     }
 })(this);
