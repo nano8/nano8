@@ -17,14 +17,12 @@
     var TEST_NOTE          = 'C4';
     var TEST_NOTE_POSITION = _.findIndex(RetroSound.ORDERED_NOTES, function (n) { return n[0] === TEST_NOTE; });
     var TEST_NOTE_BPM      = 120;
-
-    var wholeNote     = 4;
-    var halfNote      = 2;
-    var quarterNote   = 1;
-    var eightNote     = 0.5;
-    var sixteenthNote = 0.25;
-
-    var TEST_NOTE_DURATION = (1000 / (TEST_NOTE_BPM / 60)) * wholeNote;
+    var TEST_NOTE_LENGTHS  = {
+        eight:   0.5,
+        quarter: 1,
+        half:    2,
+        whole:   4,
+    };
 
     this.EditorTracker = function ($container, data) {
         var self = this;
@@ -40,8 +38,9 @@
         // this.selectedTab = 'wave';
 
         // audio functions
-        this.playingSound = false;
+        this.playingSound       = false;
         this.selectedInstrument = 0;
+        this.testNoteLength     = (1000 / (TEST_NOTE_BPM / 60)) * TEST_NOTE_LENGTHS.eight;
 
         // create the soundchip
         this.soundchip = new RetroSound();
@@ -67,6 +66,14 @@
 
             $container.find('.panels .panel').removeClass('selected');
             $container.find('.panels .panel[data-panel="' + $(this).data('panel') + '"]').addClass('selected');
+        });
+
+        // interface events - change test note length
+        $container.find('.note-lengths .note-length').on('click', function () {
+            $container.find('.note-lengths .note-length').removeClass('selected');
+            $(this).addClass('selected');
+
+            self.testNoteLength = (1000 / (TEST_NOTE_BPM / 60)) * TEST_NOTE_LENGTHS[$(this).data('length')];
         });
 
         // interface events - wave tab
@@ -150,7 +157,7 @@
 
             if (this.playingSound) return;
 
-            this.soundchip.playNote(this.selectedInstrument, TEST_NOTE, TEST_NOTE_DURATION, function () {
+            this.soundchip.playNote(this.selectedInstrument, TEST_NOTE, this.testNoteLength, function () {
                 self.playingSound = false;
             });
             this.playingSound = true;

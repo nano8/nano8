@@ -50,6 +50,7 @@ html {
   width: 640px;
   height: 544px;
   background: #70608b;
+  position: relative;
 }
 .editor .editor-tracker .page.sampler .waveform {
   width: 152px;
@@ -61,6 +62,41 @@ html {
 .editor .editor-tracker .page.sampler .retro-screen {
   margin-left: 16px;
   margin-top: 64px;
+}
+.editor .editor-tracker .page.sampler .note-lengths {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+}
+.editor .editor-tracker .page.sampler .note-lengths .note-length {
+  width: 28px;
+  height: 40px;
+  background-image: url(../img/editor-ui.png);
+  display: inline-block;
+}
+.editor .editor-tracker .page.sampler .note-lengths .note-length[data-length="eight"] {
+  background-position: -56px -68px;
+}
+.editor .editor-tracker .page.sampler .note-lengths .note-length[data-length="eight"].selected {
+  background-position: -56px -108px;
+}
+.editor .editor-tracker .page.sampler .note-lengths .note-length[data-length="quarter"] {
+  background-position: 0px -68px;
+}
+.editor .editor-tracker .page.sampler .note-lengths .note-length[data-length="quarter"].selected {
+  background-position: 0px -108px;
+}
+.editor .editor-tracker .page.sampler .note-lengths .note-length[data-length="half"] {
+  background-position: -28px -68px;
+}
+.editor .editor-tracker .page.sampler .note-lengths .note-length[data-length="half"].selected {
+  background-position: -28px -108px;
+}
+.editor .editor-tracker .page.sampler .note-lengths .note-length[data-length="whole"] {
+  background-position: -84px -68px;
+}
+.editor .editor-tracker .page.sampler .note-lengths .note-length[data-length="whole"].selected {
+  background-position: -84px -108px;
 }
 .editor .editor-tracker .page.sampler .tabs {
   width: 600px;
@@ -97,10 +133,10 @@ html {
   margin-right: -8px;
 }
 .editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="wave"] .wave-types .wave-type.sin {
-  background-position: 0 -28px;
+  background-position: 0px -28px;
 }
 .editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="wave"] .wave-types .wave-type.sin.selected {
-  background-position: 0 -48px;
+  background-position: 0px -48px;
 }
 .editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="wave"] .wave-types .wave-type.square {
   background-position: -28px -28px;

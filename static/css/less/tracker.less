@@ -1,8 +1,34 @@
-@image-ui-tab-height:        28px;
-@image-ui-tab-width:         56px;
-@image-ui-wave-width:        28px;
-@image-ui-wave-height:       20px;
+@image-ui-url: url(../img/editor-ui.png);
+
+@image-ui-range-handle-pos: -112px 0;
 @image-ui-range-handle-size: 16px;
+
+@image-ui-wave-width:  28px;
+@image-ui-wave-height: 20px;
+.image-ui-wave-pos (@num, @selected:0) when (@selected = 0) {
+    background-position: -(@image-ui-wave-width * @num) -@image-ui-wave-width;
+}
+.image-ui-wave-pos (@num, @selected) when (@selected = 1) {
+    background-position: -(@image-ui-wave-width * @num) (-@image-ui-wave-width - @image-ui-wave-height);
+}
+
+@image-ui-tab-height: 28px;
+@image-ui-tab-width:  56px;
+
+@image-ui-switch-width:  52px;
+@image-ui-switch-height: 20px;
+
+@image-ui-switch-pos:          -56px 0;
+@image-ui-switch-selected-pos: 0 0;
+
+@image-ui-note-length-width: 28px;
+@image-ui-note-length-height: 40px;
+.image-ui-note-length-pos (@num, @selected:0) when (@selected = 0) {
+    background-position: (-@image-ui-note-length-width * @num) -68px;
+}
+.image-ui-note-length-pos (@num, @selected) when (@selected = 1) {
+    background-position: -@image-ui-note-length-width * @num -68 - @image-ui-note-length-height;
+}
 
 @pico-color-orange:    #FF9300;
 @pico-color-violet:    #70608B;
@@ -56,8 +82,8 @@ body, html {
             border:              0;
             height:              @image-ui-range-handle-size;
             width:               @image-ui-range-handle-size;
-            background-image:    url(../img/editor-ui.png);
-            background-position: -(@image-ui-tab-width * 2) 0;
+            background-image:    @image-ui-url;
+            background-position: @image-ui-range-handle-pos;
             cursor:              pointer;
             margin-top:          -8px;
         }
@@ -69,6 +95,7 @@ body, html {
             width:      640px;
             height:     544px;
             background: @pico-color-violet;
+            position:   relative;
 
             .waveform {
                 width:       152px; /* 632*/
@@ -78,6 +105,45 @@ body, html {
             .retro-screen {
                 margin-left: 16px;
                 margin-top:  64px;
+            }
+            .note-lengths {
+                position: absolute;
+
+                left: 10px;
+                top:  10px;
+
+                .note-length {
+                    width:               28px;
+                    height:              40px;
+                    background-image:    @image-ui-url;
+                    display:             inline-block;
+
+                    &[data-length="eight"] {
+                        .image-ui-note-length-pos(2);
+                        &.selected {
+                            .image-ui-note-length-pos(2, 1);
+                        }
+                    }
+                    &[data-length="quarter"] {
+                        .image-ui-note-length-pos(0);
+                        &.selected {
+                            .image-ui-note-length-pos(0, 1);
+                        }
+                    }
+                    &[data-length="half"] {
+                        .image-ui-note-length-pos(1);
+                        &.selected {
+                            .image-ui-note-length-pos(1, 1);
+                        }
+                    }
+                    &[data-length="whole"] {
+                        .image-ui-note-length-pos(3 );
+                        &.selected {
+                            .image-ui-note-length-pos(3, 1);
+                        }
+                    }
+
+                }
             }
             .tabs {
                 width:      600px;
@@ -113,38 +179,38 @@ body, html {
                                 .wave-type {
                                     width:            @image-ui-wave-width;
                                     height:           @image-ui-wave-height;
-                                    background-image: url(../img/editor-ui.png);
+                                    background-image: @image-ui-url;
                                     display:          inline-block;
                                     margin-right:     -8px;
 
                                     &.sin {
-                                        background-position: 0 -@image-ui-tab-height;
+                                        .image-ui-wave-pos (0);
                                         &.selected {
-                                            background-position: 0 -@image-ui-tab-height - @image-ui-wave-height;
+                                            .image-ui-wave-pos (0, 1);
                                         }
                                     }
                                     &.square {
-                                        background-position: -@image-ui-tab-height -@image-ui-tab-height;
+                                        .image-ui-wave-pos (1);
                                         &.selected {
-                                            background-position: -@image-ui-tab-height -@image-ui-tab-height - @image-ui-wave-height;
+                                            .image-ui-wave-pos (1, 1);
                                         }
                                     }
                                     &.sawtooth {
-                                        background-position: -@image-ui-tab-height * 2 -@image-ui-tab-height;
+                                        .image-ui-wave-pos (2);
                                         &.selected {
-                                            background-position: -@image-ui-tab-height * 2 -@image-ui-tab-height - @image-ui-wave-height;
+                                            .image-ui-wave-pos (2, 1);
                                         }
                                     }
                                     &.triangle {
-                                        background-position: -@image-ui-tab-height * 3 -@image-ui-tab-height;
+                                        .image-ui-wave-pos (3);
                                         &.selected {
-                                            background-position: -@image-ui-tab-height * 3 -@image-ui-tab-height - @image-ui-wave-height;
+                                            .image-ui-wave-pos (3, 1);
                                         }
                                     }
                                     &.noise {
-                                        background-position: -@image-ui-tab-height * 4 -@image-ui-tab-height;
+                                        .image-ui-wave-pos (4);
                                         &.selected {
-                                            background-position: -@image-ui-tab-height * 4 -@image-ui-tab-height - @image-ui-wave-height;
+                                            .image-ui-wave-pos (4, 1);
                                         }
                                     }
                                 }
@@ -172,16 +238,16 @@ body, html {
                     .switch {
                         padding-top:         8px;
                         padding-left:        4px;
-                        width:               52px;
-                        height:              20px;
-                        background-image:    url(../img/editor-ui.png);
-                        background-position: -56px 0;
+                        width:               @image-ui-switch-width;
+                        height:              @image-ui-switch-height;
+                        background-image:    @image-ui-url;
+                        background-position: @image-ui-switch-pos;
                         cursor:              pointer;
                         display:             inline-block;
                         margin-right:        -12px;
 
                         &.selected {
-                            background-position: 0 0;
+                            background-position: @image-ui-switch-selected-pos;
                         }
 
                     }
