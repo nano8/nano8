@@ -8,9 +8,14 @@
 
     var DEFAULT_INSTRUMENTS = [
         {
-            osctype: RetroSound.OSC_TYPES.SINE
+            osctype:    RetroSound.OSC_TYPES.SINE,
+            tuning:     0,
+            finetuning: 0
         }
     ];
+
+    var TEST_NOTE = 'C4';
+    var TEST_NOTE_POSITION = _.findIndex(RetroSound.ORDERED_NOTES, function (n) { return n[0] === TEST_NOTE; });
 
     this.EditorTracker = function ($container, data) {
         var self = this;
@@ -49,6 +54,30 @@
             $('.wave-type').removeClass('selected');
             $(this).addClass('selected');
             self.drawWaveform();
+
+            if (self.playingSound !== null) {
+                self.playingSound.osc.type = $(this).attr('data-wave');
+            }
+        });
+
+        $('.fine-tuning input[type=range]').on('input', function () {
+            var newFinetuning = parseFloat($(this).val());
+
+            $('.fine-tuning span.value').text((newFinetuning > 0 ? '+' : '') + newFinetuning);
+            self.soundchip.instruments[self.selectedInstrument].finetuning = newFinetuning;
+            if (self.playingSound !== null) {
+                self.playingSound.osc.frequency.value = RetroSound.NOTES[TEST_NOTE] + newFinetuning;
+            }
+        });
+
+        $('.tuning input[type=range]').on('input', function () {
+            var newTuning = parseInt($(this).val());
+
+            $('.tuning span.value').text((newFinetuning > 0 ? '+' : '') +newTuning);
+            self.soundchip.instruments[self.selectedInstrument].tuning = newTuning;
+            if (self.playingSound !== null) {
+                self.playingSound.osc.frequency.value = RetroSound.ORDERED_NOTES[TEST_NOTE_POSITION + newTuning][1]
+            }
         });
 
         // interface keyboard events
@@ -107,7 +136,7 @@
         },
         toggleSound: function () {
             if (this.playingSound === null) {
-                var osc = this.soundchip.playNote(this.selectedInstrument, 'C4', -1);
+                var osc = this.soundchip.playNote(this.selectedInstrument, TEST_NOTE, -1);
                 this.playingSound = {
                     osc:        osc,
                     instrument: this.selectedInstrument
