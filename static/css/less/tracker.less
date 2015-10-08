@@ -109,14 +109,15 @@ body, html {
             .note-lengths {
                 position: absolute;
 
-                left: 10px;
-                top:  10px;
+                left: 464px;
+                top:  16px;
 
                 .note-length {
                     width:               28px;
                     height:              40px;
                     background-image:    @image-ui-url;
                     display:             inline-block;
+                    cursor:              pointer;
 
                     &[data-length="eight"] {
                         .image-ui-note-length-pos(2);
@@ -182,6 +183,7 @@ body, html {
                                     background-image: @image-ui-url;
                                     display:          inline-block;
                                     margin-right:     -8px;
+                                    cursor:           pointer;
 
                                     &.sin {
                                         .image-ui-wave-pos (0);

@@ -43,36 +43,36 @@
         // remap mouse events
         this.onmousemove = function () {};
         this.retroDisplay.canvas.onmousemove = function (e) {
-            e.retroLayerX = e.layerX / 4
-            e.retroLayerY = e.layerY / 4
+            e.retroLayerX = e.layerX / SCALE_FACTOR;
+            e.retroLayerY = e.layerY / SCALE_FACTOR;
             self.onmousemove(e);
         };
 
         this.onmousedown = function () {};
         this.retroDisplay.canvas.onmousedown = function (e) {
-            e.retroLayerX = e.layerX / 4
-            e.retroLayerY = e.layerY / 4
+            e.retroLayerX = e.layerX / SCALE_FACTOR;
+            e.retroLayerY = e.layerY / SCALE_FACTOR;
             self.onmousedown(e);
         };
 
         this.onmouseup = function () {};
         this.retroDisplay.canvas.onmouseup = function (e) {
-            e.retroLayerX = e.layerX / 4
-            e.retroLayerY = e.layerY / 4
+            e.retroLayerX = e.layerX / SCALE_FACTOR;
+            e.retroLayerY = e.layerY / SCALE_FACTOR;
             self.onmouseup(e);
         };
 
         this.onmouseout = function () {};
         this.retroDisplay.canvas.onmouseout = function (e) {
-            e.retroLayerX = e.layerX / 4
-            e.retroLayerY = e.layerY / 4
+            e.retroLayerX = e.layerX / SCALE_FACTOR;
+            e.retroLayerY = e.layerY / SCALE_FACTOR;
             self.onmouseout(e);
         };
 
         this.onmouseover = function () {};
         this.retroDisplay.canvas.onmouseover = function (e) {
-            e.retroLayerX = e.layerX / 4
-            e.retroLayerY = e.layerY / 4
+            e.retroLayerX = e.layerX / SCALE_FACTOR;
+            e.retroLayerY = e.layerY / SCALE_FACTOR;
             self.onmouseover(e);
         };
 

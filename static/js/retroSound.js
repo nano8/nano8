@@ -7,6 +7,9 @@
     var NOTES                 = _.zipObject(ORDERED_NOTES);
     var ANTI_CLICK_ADJUSTMENT = 0.01;
 
+    var VOLUME_STEPS = 16;
+    var VOLUME_DEPTH = 64;
+
     // normalize AudioContext across browsers
     window.AudioContext = window.AudioContext||window.webkitAudioContext;
 
@@ -32,11 +35,23 @@
 
             this.instruments.push(instrument);
         },
+
         addInstruments: function (instruments) {
             var self = this;
 
             _.each(instruments, function (i) { self.addInstrument(i); });
         },
+
+        generateDefaultInstrument: function () {
+            return {
+                oscillatorType: RetroSound.OSC_TYPES.SINE,
+                tuning:         0,
+                finetuning:     0,
+                finetuning:     0,
+                volume:         _.map(_.range(VOLUME_STEPS), function () { return 0.5; })
+            };
+        },
+
         playNote: function (instrumentId, note, time, doneCallback) {
             var self = this;
 
@@ -72,7 +87,7 @@
                 oscillator.loop   = true;
                 oscillator.connect(biquadFilter);
                 oscillator.frequency = biquadFilter.frequency;
-                oscillator.frequency.value = note + 2000;
+                oscillator.frequency.value = NOTES[note] + 1000;
             }
 
             oscillator.start();
@@ -81,18 +96,19 @@
             var stopTime  = startTime + timeInSeconds;
 
             self.instruments[instrumentId].amp.gain.setValueAtTime(0, startTime);
-            self.instruments[instrumentId].amp.gain.linearRampToValueAtTime(10, startTime + ANTI_CLICK_ADJUSTMENT);
+            self.instruments[instrumentId].amp.gain.linearRampToValueAtTime(self.instruments[instrumentId].volume[0], startTime + ANTI_CLICK_ADJUSTMENT);
 
             self.clock.callbackAtTime(function () {
                 var currentTime = self.context.currentTime;
 
-                self.instruments[instrumentId].amp.gain.setValueAtTime(10, currentTime);
+                self.instruments[instrumentId].amp.gain.setValueAtTime(0, currentTime);
                 self.instruments[instrumentId].amp.gain.linearRampToValueAtTime(0.0, currentTime + ANTI_CLICK_ADJUSTMENT);
                 oscillator.stop(currentTime + ANTI_CLICK_ADJUSTMENT);
 
                 if (doneCallback !== undefined) doneCallback();
             }, stopTime - ANTI_CLICK_ADJUSTMENT)
-        },
+        }
+
     };
 
     RetroSound.OSC_TYPES = {
@@ -104,7 +120,8 @@
     };
     RetroSound.ORDERED_NOTES = ORDERED_NOTES;
     RetroSound.NOTES         = NOTES;
-
+    RetroSound.VOLUME_DEPTH  = VOLUME_DEPTH;
+    RetroSound.VOLUME_STEPS  = VOLUME_STEPS;
 
     this.RetroSound = RetroSound;
 })(this);
