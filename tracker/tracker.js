@@ -36,6 +36,9 @@
         this.waveformEditor        = new RetroScreen(this.$waveformEditorCanvas);
         this.waveformEditor.clear();
 
+        // interface
+        // this.selectedTab = 'wave';
+
         // audio functions
         this.playingSound = false;
         this.selectedInstrument = 0;
@@ -57,25 +60,34 @@
         this.waveformEditor.onmousemove = function (e) {
         }
 
+        // interface events - tab switch
+        $container.find('.tabs-switch .switch').on('click', function () {
+            $container.find('.tabs-switch .switch').removeClass('selected');
+            $(this).addClass('selected');
+
+            $container.find('.panels .panel').removeClass('selected');
+            $container.find('.panels .panel[data-panel="' + $(this).data('panel') + '"]').addClass('selected');
+        });
+
         // interface events - wave tab
-        $('.wave-type').on('click', function () {
+        $container.find('.wave-type').on('click', function () {
             self.soundchip.instruments[self.selectedInstrument].oscillatorType = $(this).attr('data-wave');
-            $('.wave-type').removeClass('selected');
+            $container.find('.wave-type').removeClass('selected');
             $(this).addClass('selected');
             self.drawWaveform();
         });
 
-        $('.fine-tuning input[type=range]').on('input', function () {
+        $container.find('.fine-tuning input[type=range]').on('input', function () {
             var newFinetuning = parseFloat($(this).val());
 
-            $('.fine-tuning span.value').text((newFinetuning > 0 ? '+' : '') + newFinetuning);
+            $container.find('.fine-tuning span.value').text((newFinetuning > 0 ? '+' : '') + newFinetuning);
             self.soundchip.instruments[self.selectedInstrument].finetuning = newFinetuning;
         });
 
-        $('.tuning input[type=range]').on('input', function () {
+        $container.find('.tuning input[type=range]').on('input', function () {
             var newTuning = parseInt($(this).val());
 
-            $('.tuning span.value').text((newTuning > 0 ? '+' : '') +newTuning);
+            $container.find('.tuning span.value').text((newTuning > 0 ? '+' : '') +newTuning);
             self.soundchip.instruments[self.selectedInstrument].tuning = newTuning;
         });
 
