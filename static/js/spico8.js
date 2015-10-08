@@ -304,17 +304,18 @@
         var flag = spriteFlags[n] || 0;
 
         // return the number or the nth bit of it as boolean
-        return f !== undefined ? ((flag & ( 1 << f )) >> f) === 1 : flag
+        return f !== undefined ? n & (1 << flag) > 0 : flag
     };
     window.fset = function (n, f, v) {
         // sets the number of the flag or a specific bit
         if (arguments.length === 2) {
             spriteFlags[n] = f;
         } else if (arguments.length === 3) {
-            var flagBinary = _.padRight((spriteFlags[n] >>> 0).toString(2), NUMBER_OF_FLAGS, '0').split('');
-
-            flagBinary[f]  = v === true ? '1' : '0';
-            spriteFlags[n] = parseInt(flagBinary.reverse().join(''), 2);
+            if (v === true) {
+                spriteFlags[n] |= (1 << f);
+            } else if (v === false) {
+                spriteFlags[n] &= ~(1 << f);
+            }
         }
     };
     window.print = function (str, x, y, c) {
@@ -536,14 +537,8 @@
         // try {
             _.times(celH, function (y) {
                 _.times(celW, function (x) {
-                    if (layer !== undefined) {
-                        var mask = _.padRight(strReverse((layer >>> 0).toString(2)), NUMBER_OF_FLAGS, '0');
-                        var flag = _.padRight(strReverse((spriteFlags[mapSheet[celY + y][celX + x]] >>> 0).toString(2)), NUMBER_OF_FLAGS, '0');
-                        if (!_.all(mask, function (m, i) {
-                            return m == '0' ? true : flag[i] === '1';
-                        })) return;
-                    }
-
+                    // ignore the tile if a flag layer is set and it does not match
+                    if (layer !== undefined && (spriteFlags[mapSheet[celY + y][celX + x]] & layer) !== layer) return;
 
                     // draw the tile or an empty tile if sprite == 0
                     if (celX + celY !== 0)
