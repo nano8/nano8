@@ -15,7 +15,6 @@
         this.clock       = new WAAClock(this.context);
         this.instruments = [];
         this.output      = this.context.createGain();
-        this.amps        = [];
 
         this.output.connect(this.context.destination);
 
@@ -24,21 +23,24 @@
 
     RetroSound.prototype = {
         addInstrument: function (instrument) {
-            this.instruments.push(instrument);
-
             var amp = this.context.createGain();
             amp.connect(this.output);
             amp.gain.value = 0;
-            this.amps.push(amp);
+
+            instrument.amp         = amp;
+            instrument.playingNote = null;
+
+            this.instruments.push(instrument);
         },
         addInstruments: function (instruments) {
             var self = this;
 
             _.each(instruments, function (i) { self.addInstrument(i); });
         },
-        playNote: function (instrumentId, note, time) {
+        playNote: function (instrumentId, note, time, doneCallback) {
             var self = this;
-            var timeInSeconds = 1000 / time;
+
+            var timeInSeconds = time / 1000;
             var instrument = this.instruments[instrumentId];
 
             if (instrument.tuning !== 0) {
@@ -46,31 +48,51 @@
                 note = ORDERED_NOTES[currentNoteIndex + instrument.tuning][0];
             }
 
-            var oscillator             = this.context.createOscillator();
-            oscillator.type            = instrument.osctype;
-            oscillator.frequency.value = NOTES[note] + instrument.finetuning;
-            oscillator.connect(this.amps[instrumentId]);
+            var oscillator;
+
+            if (instrument.oscillatorType !== 'noise') {
+                oscillator                 = this.context.createOscillator();
+                oscillator.type            = instrument.oscillatorType;
+                oscillator.frequency.value = NOTES[note] + instrument.finetuning;
+                oscillator.connect(this.instruments[instrumentId].amp);
+            } else {
+                var bufferSize  = 2 * this.context.sampleRate;
+                var noiseBuffer = this.context.createBuffer(1, bufferSize, this.context.sampleRate);
+                var output      = noiseBuffer.getChannelData(0);
+
+                var biquadFilter = this.context.createBiquadFilter();
+                biquadFilter.connect(this.instruments[instrumentId].amp);
+
+                for (var i = 0; i < bufferSize; i++) {
+                    output[i] = Math.random() * 2 - 1;
+                }
+
+                oscillator        = this.context.createBufferSource();
+                oscillator.buffer = noiseBuffer;
+                oscillator.loop   = true;
+                oscillator.connect(biquadFilter);
+                oscillator.frequency = biquadFilter.frequency;
+                oscillator.frequency.value = note + 2000;
+            }
+
             oscillator.start();
 
             var startTime = self.context.currentTime + ANTI_CLICK_ADJUSTMENT;
             var stopTime  = startTime + timeInSeconds;
 
-            self.amps[instrumentId].gain.setValueAtTime(0, startTime);
-            self.amps[instrumentId].gain.linearRampToValueAtTime(10, startTime + ANTI_CLICK_ADJUSTMENT);
+            self.instruments[instrumentId].amp.gain.setValueAtTime(0, startTime);
+            self.instruments[instrumentId].amp.gain.linearRampToValueAtTime(10, startTime + ANTI_CLICK_ADJUSTMENT);
 
-            if (time !== -1) {
-                self.amps[instrumentId].gain.setValueAtTime(10, stopTime - ANTI_CLICK_ADJUSTMENT);
-                self.amps[instrumentId].gain.linearRampToValueAtTime(0.0, stopTime)
-                oscillator.stop(stopTime + ANTI_CLICK_ADJUSTMENT);
-            }
+            self.clock.callbackAtTime(function () {
+                var currentTime = self.context.currentTime;
 
-            return oscillator;
+                self.instruments[instrumentId].amp.gain.setValueAtTime(10, currentTime);
+                self.instruments[instrumentId].amp.gain.linearRampToValueAtTime(0.0, currentTime + ANTI_CLICK_ADJUSTMENT);
+                oscillator.stop(currentTime + ANTI_CLICK_ADJUSTMENT);
+
+                if (doneCallback !== undefined) doneCallback();
+            }, stopTime - ANTI_CLICK_ADJUSTMENT)
         },
-        stopOscillator: function (oscillator, instrumentId) {
-            this.amps[instrumentId].gain.setValueAtTime(10, this.context.currentTime);
-            this.amps[instrumentId].gain.linearRampToValueAtTime(0.0, this.context.currentTime + ANTI_CLICK_ADJUSTMENT)
-            oscillator.stop(this.context.currentTime + ANTI_CLICK_ADJUSTMENT);
-        }
     };
 
     RetroSound.OSC_TYPES = {

@@ -8,14 +8,23 @@
 
     var DEFAULT_INSTRUMENTS = [
         {
-            osctype:    RetroSound.OSC_TYPES.SINE,
-            tuning:     0,
-            finetuning: 0
+            oscillatorType: RetroSound.OSC_TYPES.SINE,
+            tuning:         0,
+            finetuning:     0,
         }
     ];
 
-    var TEST_NOTE = 'C4';
+    var TEST_NOTE          = 'C4';
     var TEST_NOTE_POSITION = _.findIndex(RetroSound.ORDERED_NOTES, function (n) { return n[0] === TEST_NOTE; });
+    var TEST_NOTE_BPM      = 120;
+
+    var wholeNote     = 4;
+    var halfNote      = 2;
+    var quarterNote   = 1;
+    var eightNote     = 0.5;
+    var sixteenthNote = 0.25;
+
+    var TEST_NOTE_DURATION = (1000 / (TEST_NOTE_BPM / 60)) * wholeNote;
 
     this.EditorTracker = function ($container, data) {
         var self = this;
@@ -28,7 +37,7 @@
         this.waveformEditor.clear();
 
         // audio functions
-        this.playingSound = null;
+        this.playingSound = false;
         this.selectedInstrument = 0;
 
         // create the soundchip
@@ -50,14 +59,10 @@
 
         // interface events - wave tab
         $('.wave-type').on('click', function () {
-            self.soundchip.instruments[self.selectedInstrument].osctype = $(this).attr('data-wave');
+            self.soundchip.instruments[self.selectedInstrument].oscillatorType = $(this).attr('data-wave');
             $('.wave-type').removeClass('selected');
             $(this).addClass('selected');
             self.drawWaveform();
-
-            if (self.playingSound !== null) {
-                self.playingSound.osc.type = $(this).attr('data-wave');
-            }
         });
 
         $('.fine-tuning input[type=range]').on('input', function () {
@@ -65,24 +70,18 @@
 
             $('.fine-tuning span.value').text((newFinetuning > 0 ? '+' : '') + newFinetuning);
             self.soundchip.instruments[self.selectedInstrument].finetuning = newFinetuning;
-            if (self.playingSound !== null) {
-                self.playingSound.osc.frequency.value = RetroSound.NOTES[TEST_NOTE] + newFinetuning;
-            }
         });
 
         $('.tuning input[type=range]').on('input', function () {
             var newTuning = parseInt($(this).val());
 
-            $('.tuning span.value').text((newFinetuning > 0 ? '+' : '') +newTuning);
+            $('.tuning span.value').text((newTuning > 0 ? '+' : '') +newTuning);
             self.soundchip.instruments[self.selectedInstrument].tuning = newTuning;
-            if (self.playingSound !== null) {
-                self.playingSound.osc.frequency.value = RetroSound.ORDERED_NOTES[TEST_NOTE_POSITION + newTuning][1]
-            }
         });
 
         // interface keyboard events
         window.onkeyup = function (e) {
-            if (e.keyCode == 32) self.toggleSound();
+            if (e.keyCode == 32) self.playSound();
         };
 
         // done, draw the waveform
@@ -108,7 +107,7 @@
                     lastY = lastY === undefined ? self.waveformEditor.height / 2 : lastY;
                     lastX = lastX === undefined ? 0 : lastX;
 
-                    switch (self.soundchip.instruments[self.selectedInstrument].osctype) {
+                    switch (self.soundchip.instruments[self.selectedInstrument].oscillatorType) {
                         case RetroSound.OSC_TYPES.SINE:
                             y = (Math.sin(x / 9.62) * self.waveformEditor.height / 2) + self.waveformEditor.height / 2;
                             break;
@@ -134,17 +133,15 @@
 
             this.waveformEditor.draw();
         },
-        toggleSound: function () {
-            if (this.playingSound === null) {
-                var osc = this.soundchip.playNote(this.selectedInstrument, TEST_NOTE, -1);
-                this.playingSound = {
-                    osc:        osc,
-                    instrument: this.selectedInstrument
-                };
-            } else {
-                this.soundchip.stopOscillator(this.playingSound.osc, this.playingSound.instrument);
-                this.playingSound = null;
-            }
+        playSound: function () {
+            var self = this;
+
+            if (this.playingSound) return;
+
+            this.soundchip.playNote(this.selectedInstrument, TEST_NOTE, TEST_NOTE_DURATION, function () {
+                self.playingSound = false;
+            });
+            this.playingSound = true;
         }
     }
 })(this);
