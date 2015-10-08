@@ -92,18 +92,30 @@
 
             oscillator.start();
 
-            var startTime = self.context.currentTime + ANTI_CLICK_ADJUSTMENT;
+            var startTime = self.context.currentTime;
             var stopTime  = startTime + timeInSeconds;
 
+            // initial volume ramp up
             self.instruments[instrumentId].amp.gain.setValueAtTime(0, startTime);
             self.instruments[instrumentId].amp.gain.linearRampToValueAtTime(self.instruments[instrumentId].volume[0], startTime + ANTI_CLICK_ADJUSTMENT);
 
+            // volume slides. ignore the first one because it's already set
+            var volumeTicks = timeInSeconds / self.instruments[instrumentId].volume.length;
+            _.each(self.instruments[instrumentId].volume, function (v, i, volumes) {
+                console.log(i, volumes.length - 1);
+                if (i === 0) return;
+
+                // self.instruments[instrumentId].amp.gain.setValueAtTime(volumes[i-1], startTime + (volumeTicks * i));
+                self.instruments[instrumentId].amp.gain.linearRampToValueAtTime(v, startTime + (volumeTicks * i) + ANTI_CLICK_ADJUSTMENT);
+            });
+
+            // stop the oscillator
             self.clock.callbackAtTime(function () {
                 var currentTime = self.context.currentTime;
 
-                self.instruments[instrumentId].amp.gain.setValueAtTime(0, currentTime);
+                self.instruments[instrumentId].amp.gain.setValueAtTime(_.last(self.instruments[instrumentId].volume), currentTime);
                 self.instruments[instrumentId].amp.gain.linearRampToValueAtTime(0.0, currentTime + ANTI_CLICK_ADJUSTMENT);
-                oscillator.stop(currentTime + ANTI_CLICK_ADJUSTMENT);
+                oscillator.stop(currentTime + (ANTI_CLICK_ADJUSTMENT * 2));
 
                 if (doneCallback !== undefined) doneCallback();
             }, stopTime - ANTI_CLICK_ADJUSTMENT)

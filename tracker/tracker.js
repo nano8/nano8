@@ -143,17 +143,17 @@
 
                     _.each(this.soundchip.instruments[this.selectedInstrument].volume, function (y, x, volumes) {
                         self.waveformEditor.line(x * stepX,
-                            y * self.waveformEditor.height,
+                            (1 - y) * self.waveformEditor.height,
                             (x * stepX) + stepX,
-                            y * self.waveformEditor.height,
+                            (1 - y) * self.waveformEditor.height,
                             Spico.PICO_DEFAULT_COLORS_VALUES[8]);
 
                         if (x === 0) return;
 
                         self.waveformEditor.line(x * stepX,
-                            y * self.waveformEditor.height,
+                            (1 - y) * self.waveformEditor.height,
                             x * stepX,
-                            volumes[x-1] * self.waveformEditor.height,
+                            (1 - volumes[x-1]) * self.waveformEditor.height,
                             Spico.PICO_DEFAULT_COLORS_VALUES[8]);
 
                     });
@@ -215,7 +215,7 @@
 
                 var x = Math.floor(e.retroLayerX / (self.waveformEditor.width / RetroSound.VOLUME_STEPS));
                 var y = Math.floor(e.retroLayerY / (self.waveformEditor.height / RetroSound.VOLUME_DEPTH));
-                var y = e.retroLayerY / self.waveformEditor.height;
+                var y = 1 - (e.retroLayerY / self.waveformEditor.height);
 
                 self.soundchip.instruments[self.selectedInstrument].volume[x] = y;
 
