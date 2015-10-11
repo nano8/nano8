@@ -3,14 +3,16 @@
 @image-ui-range-handle-pos: -112px 0;
 @image-ui-range-handle-size: 16px;
 
-@image-ui-wave-width:  28px;
-@image-ui-wave-height: 20px;
+@image-ui-wave-width:  44px;
+@image-ui-wave-height: 36px;
 .image-ui-wave-pos (@num, @selected:0) when (@selected = 0) {
-    background-position: -(@image-ui-wave-width * @num) -@image-ui-wave-width;
+    background-position: -(@image-ui-wave-width * @num) -28px;
 }
 .image-ui-wave-pos (@num, @selected) when (@selected = 1) {
-    background-position: -(@image-ui-wave-width * @num) (-@image-ui-wave-width - @image-ui-wave-height);
+    background-image: @image-ui-url, @image-ui-url;
+    background-position: -(@image-ui-wave-width * @num) -28px, -(@image-ui-wave-width * 5) -28px;
 }
+
 
 @image-ui-tab-height: 28px;
 @image-ui-tab-width:  56px;
@@ -21,13 +23,25 @@
 @image-ui-switch-pos:          -56px 0;
 @image-ui-switch-selected-pos: 0 0;
 
-@image-ui-note-length-width: 28px;
-@image-ui-note-length-height: 40px;
+@image-ui-note-length-width:  44px;
+@image-ui-note-length-height: 56px;
+
 .image-ui-note-length-pos (@num, @selected:0) when (@selected = 0) {
-    background-position: (-@image-ui-note-length-width * @num) -68px;
+    background-position: (-@image-ui-note-length-width * @num) -100px;
 }
 .image-ui-note-length-pos (@num, @selected) when (@selected = 1) {
-    background-position: -@image-ui-note-length-width * @num -68 - @image-ui-note-length-height;
+    background-image: @image-ui-url, @image-ui-url;
+    background-position: (-@image-ui-note-length-width * @num) -100px, (-@image-ui-note-length-width * 4) -100px;
+}
+
+@image-ui-volume-default-width:  44px;
+@image-ui-volume-default-height: 36px;
+.image-ui-volume-dafault-pos (@num, @selected:0) when (@selected = 0) {
+    background-position: -(@image-ui-volume-default-width * @num) -64px;
+}
+.image-ui-volume-dafault-pos (@num, @selected) when (@selected = 1) {
+    background-image: @image-ui-url, @image-ui-url;
+    background-position: -(@image-ui-volume-default-width * @num) -64px, -(@image-ui-volume-default-width * 5) -64px;
 }
 
 @pico-color-orange:    #FF9300;
@@ -66,6 +80,14 @@ body, html {
     height: 576;
 
     .editor-tracker {
+        * {
+              -webkit-user-select: none;
+              -khtml-user-select:  none;
+              -moz-user-select:    none;
+              user-select:         none;
+
+              cursor: default;
+        }
         input[type=range] {
             -webkit-appearance: none;
             width:              100%;
@@ -109,12 +131,12 @@ body, html {
             .note-lengths {
                 position: absolute;
 
-                left: 464px;
-                top:  16px;
+                left: 404px;
+                top:  4px;
 
                 .note-length {
-                    width:               28px;
-                    height:              40px;
+                    width:               @image-ui-note-length-width;
+                    height:              @image-ui-note-length-height;
                     background-image:    @image-ui-url;
                     display:             inline-block;
                     cursor:              pointer;
@@ -177,42 +199,53 @@ body, html {
 
                         &[data-panel="wave"] {
                             .wave-types {
+                                width:      164px;
+                                margin-top: -12px;
+
+                                .label {
+                                    margin-top: 16px;
+                                }
+
                                 .wave-type {
                                     width:            @image-ui-wave-width;
                                     height:           @image-ui-wave-height;
                                     background-image: @image-ui-url;
                                     display:          inline-block;
-                                    margin-right:     -8px;
+                                    margin-top:       -8px;
+                                    margin-right:     -12px;
                                     cursor:           pointer;
 
+                                    // @wave-buttons: sin, square, sawtooth, triangle, noise;
+                                    // .small-buttons (.image-ui-wave-pos, @wave-buttons);
+
                                     &.sin {
-                                        .image-ui-wave-pos (0);
+                                        .image-ui-wave-pos(0);
                                         &.selected {
-                                            .image-ui-wave-pos (0, 1);
+                                            .image-ui-wave-pos(0, 1);
                                         }
                                     }
                                     &.square {
-                                        .image-ui-wave-pos (1);
+                                        .image-ui-wave-pos(1);
                                         &.selected {
-                                            .image-ui-wave-pos (1, 1);
+                                            .image-ui-wave-pos(1, 1);
                                         }
                                     }
                                     &.sawtooth {
-                                        .image-ui-wave-pos (2);
+                                        .image-ui-wave-pos(2);
                                         &.selected {
-                                            .image-ui-wave-pos (2, 1);
+                                            .image-ui-wave-pos(2, 1);
                                         }
                                     }
                                     &.triangle {
-                                        .image-ui-wave-pos (3);
+                                        .image-ui-wave-pos(3);
                                         &.selected {
-                                            .image-ui-wave-pos (3, 1);
+                                            .image-ui-wave-pos(3, 1);
                                         }
                                     }
                                     &.noise {
-                                        .image-ui-wave-pos (4);
+                                        .image-ui-wave-pos(4);
                                         &.selected {
-                                            .image-ui-wave-pos (4, 1);
+                                            .image-ui-wave-pos(4, 1);
                                         }
                                     }
                                 }
@@ -228,6 +261,53 @@ body, html {
                                 left:     370px;
                                 width:    208px;
                                 top:      0px;
+                            }
+                        }
+                        &[data-panel="volume"] {
+                            .volume-defaults {
+                                .volume-default {
+                                    width:            @image-ui-volume-default-width;
+                                    height:           @image-ui-volume-default-height;
+                                    background-image: @image-ui-url;
+                                    display:          inline-block;
+                                    margin-top:       -8px;
+                                    margin-right:     -12px;
+                                    cursor:           pointer;
+                                    margin-top:       16px;
+
+
+                                    &[data-default="0"] {
+                                        .image-ui-volume-dafault-pos(0);
+                                        &.selected {
+                                            .image-ui-volume-dafault-pos(0, 1);
+                                        }
+                                    }
+                                    &[data-default="1"] {
+                                        .image-ui-volume-dafault-pos(1);
+                                        &.selected {
+                                            .image-ui-volume-dafault-pos(1, 1);
+                                        }
+                                    }
+                                    &[data-default="2"] {
+                                        .image-ui-volume-dafault-pos(2);
+                                        &.selected {
+                                            .image-ui-volume-dafault-pos(2, 1);
+                                        }
+                                    }
+                                    &[data-default="3"] {
+                                        .image-ui-volume-dafault-pos(3);
+                                        &.selected {
+                                            .image-ui-volume-dafault-pos(3, 1);
+                                        }
+                                    }
+                                    &[data-default="4"] {
+                                        .image-ui-volume-dafault-pos(4);
+                                        &.selected {
+                                            .image-ui-volume-dafault-pos(4, 1);
+                                        }
+                                    }
+
+                                }
                             }
                         }
                     }

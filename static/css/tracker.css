@@ -10,16 +10,23 @@
 body,
 html {
   font-family: 'kongtextregular';
-  color: #ff9300;
+  color: #FF9300;
 }
 .header {
   width: 640px;
   height: 32px;
-  background: #ff9300;
+  background: #FF9300;
 }
 .editor {
   width: 640px;
   height: 576;
+}
+.editor .editor-tracker * {
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+  cursor: default;
 }
 .editor .editor-tracker input[type=range] {
   -webkit-appearance: none;
@@ -29,8 +36,8 @@ html {
   width: 100%;
   height: 8px;
   cursor: pointer;
-  border-top: 4px solid #ffeee2;
-  border-bottom: 4px solid #ff9300;
+  border-top: 4px solid #FFEEE2;
+  border-bottom: 4px solid #FF9300;
 }
 .editor .editor-tracker input[type=range]::-webkit-slider-thumb {
   -webkit-appearance: none;
@@ -49,16 +56,14 @@ html {
 .editor .editor-tracker .page.sampler {
   width: 640px;
   height: 544px;
-  background: #70608b;
+  background: #70608B;
   position: relative;
 }
 .editor .editor-tracker .page.sampler .waveform {
   width: 152px;
   /* 632*/
-
   height: 80px;
   /* 496 */
-
   background: #000000;
 }
 .editor .editor-tracker .page.sampler .retro-screen {
@@ -67,39 +72,43 @@ html {
 }
 .editor .editor-tracker .page.sampler .note-lengths {
   position: absolute;
-  left: 464px;
-  top: 16px;
+  left: 404px;
+  top: 4px;
 }
 .editor .editor-tracker .page.sampler .note-lengths .note-length {
-  width: 28px;
-  height: 40px;
+  width: 44px;
+  height: 56px;
   background-image: url(../img/editor-ui.png);
   display: inline-block;
   cursor: pointer;
 }
 .editor .editor-tracker .page.sampler .note-lengths .note-length[data-length="eight"] {
-  background-position: -56px -68px;
+  background-position: -88px -100px;
 }
 .editor .editor-tracker .page.sampler .note-lengths .note-length[data-length="eight"].selected {
-  background-position: -56px -108px;
+  background-image: url(../img/editor-ui.png), url(../img/editor-ui.png);
+  background-position: -88px -100px, -176px -100px;
 }
 .editor .editor-tracker .page.sampler .note-lengths .note-length[data-length="quarter"] {
-  background-position: 0px -68px;
+  background-position: 0px -100px;
 }
 .editor .editor-tracker .page.sampler .note-lengths .note-length[data-length="quarter"].selected {
-  background-position: 0px -108px;
+  background-image: url(../img/editor-ui.png), url(../img/editor-ui.png);
+  background-position: 0px -100px, -176px -100px;
 }
 .editor .editor-tracker .page.sampler .note-lengths .note-length[data-length="half"] {
-  background-position: -28px -68px;
+  background-position: -44px -100px;
 }
 .editor .editor-tracker .page.sampler .note-lengths .note-length[data-length="half"].selected {
-  background-position: -28px -108px;
+  background-image: url(../img/editor-ui.png), url(../img/editor-ui.png);
+  background-position: -44px -100px, -176px -100px;
 }
 .editor .editor-tracker .page.sampler .note-lengths .note-length[data-length="whole"] {
-  background-position: -84px -68px;
+  background-position: -132px -100px;
 }
 .editor .editor-tracker .page.sampler .note-lengths .note-length[data-length="whole"].selected {
-  background-position: -84px -108px;
+  background-image: url(../img/editor-ui.png), url(../img/editor-ui.png);
+  background-position: -132px -100px, -176px -100px;
 }
 .editor .editor-tracker .page.sampler .tabs {
   width: 600px;
@@ -110,8 +119,8 @@ html {
 .editor .editor-tracker .page.sampler .tabs .panels {
   height: 96px;
   width: 600px;
-  background: #fff300;
-  border: 4px solid #ff9300;
+  background: #FFF300;
+  border: 4px solid #FF9300;
 }
 .editor .editor-tracker .page.sampler .tabs .panels .panel {
   width: 584px;
@@ -122,49 +131,62 @@ html {
   position: relative;
 }
 .editor .editor-tracker .page.sampler .tabs .panels .panel .label {
-  color: #9b3e26;
+  color: #9B3E26;
   margin-bottom: 16px;
 }
 .editor .editor-tracker .page.sampler .tabs .panels .panel.selected {
   display: block;
 }
+.editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="wave"] .wave-types {
+  width: 164px;
+  margin-top: -12px;
+}
+.editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="wave"] .wave-types .label {
+  margin-top: 16px;
+}
 .editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="wave"] .wave-types .wave-type {
-  width: 28px;
-  height: 20px;
+  width: 44px;
+  height: 36px;
   background-image: url(../img/editor-ui.png);
   display: inline-block;
-  margin-right: -8px;
+  margin-top: -8px;
+  margin-right: -12px;
   cursor: pointer;
 }
 .editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="wave"] .wave-types .wave-type.sin {
   background-position: 0px -28px;
 }
 .editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="wave"] .wave-types .wave-type.sin.selected {
-  background-position: 0px -48px;
+  background-image: url(../img/editor-ui.png), url(../img/editor-ui.png);
+  background-position: 0px -28px, -220px -28px;
 }
 .editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="wave"] .wave-types .wave-type.square {
-  background-position: -28px -28px;
+  background-position: -44px -28px;
 }
 .editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="wave"] .wave-types .wave-type.square.selected {
-  background-position: -28px -48px;
+  background-image: url(../img/editor-ui.png), url(../img/editor-ui.png);
+  background-position: -44px -28px, -220px -28px;
 }
 .editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="wave"] .wave-types .wave-type.sawtooth {
-  background-position: -56px -28px;
+  background-position: -88px -28px;
 }
 .editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="wave"] .wave-types .wave-type.sawtooth.selected {
-  background-position: -56px -48px;
+  background-image: url(../img/editor-ui.png), url(../img/editor-ui.png);
+  background-position: -88px -28px, -220px -28px;
 }
 .editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="wave"] .wave-types .wave-type.triangle {
-  background-position: -84px -28px;
+  background-position: -132px -28px;
 }
 .editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="wave"] .wave-types .wave-type.triangle.selected {
-  background-position: -84px -48px;
+  background-image: url(../img/editor-ui.png), url(../img/editor-ui.png);
+  background-position: -132px -28px, -220px -28px;
 }
 .editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="wave"] .wave-types .wave-type.noise {
-  background-position: -112px -28px;
+  background-position: -176px -28px;
 }
 .editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="wave"] .wave-types .wave-type.noise.selected {
-  background-position: -112px -48px;
+  background-image: url(../img/editor-ui.png), url(../img/editor-ui.png);
+  background-position: -176px -28px, -220px -28px;
 }
 .editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="wave"] .tuning {
   position: absolute;
@@ -177,6 +199,51 @@ html {
   left: 370px;
   width: 208px;
   top: 0px;
+}
+.editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="volume"] .volume-defaults .volume-default {
+  width: 44px;
+  height: 36px;
+  background-image: url(../img/editor-ui.png);
+  display: inline-block;
+  margin-top: -8px;
+  margin-right: -12px;
+  cursor: pointer;
+  margin-top: 16px;
+}
+.editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="volume"] .volume-defaults .volume-default[data-default="0"] {
+  background-position: 0px -64px;
+}
+.editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="volume"] .volume-defaults .volume-default[data-default="0"].selected {
+  background-image: url(../img/editor-ui.png), url(../img/editor-ui.png);
+  background-position: 0px -64px, -220px -64px;
+}
+.editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="volume"] .volume-defaults .volume-default[data-default="1"] {
+  background-position: -44px -64px;
+}
+.editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="volume"] .volume-defaults .volume-default[data-default="1"].selected {
+  background-image: url(../img/editor-ui.png), url(../img/editor-ui.png);
+  background-position: -44px -64px, -220px -64px;
+}
+.editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="volume"] .volume-defaults .volume-default[data-default="2"] {
+  background-position: -88px -64px;
+}
+.editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="volume"] .volume-defaults .volume-default[data-default="2"].selected {
+  background-image: url(../img/editor-ui.png), url(../img/editor-ui.png);
+  background-position: -88px -64px, -220px -64px;
+}
+.editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="volume"] .volume-defaults .volume-default[data-default="3"] {
+  background-position: -132px -64px;
+}
+.editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="volume"] .volume-defaults .volume-default[data-default="3"].selected {
+  background-image: url(../img/editor-ui.png), url(../img/editor-ui.png);
+  background-position: -132px -64px, -220px -64px;
+}
+.editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="volume"] .volume-defaults .volume-default[data-default="4"] {
+  background-position: -176px -64px;
+}
+.editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="volume"] .volume-defaults .volume-default[data-default="4"].selected {
+  background-image: url(../img/editor-ui.png), url(../img/editor-ui.png);
+  background-position: -176px -64px, -220px -64px;
 }
 .editor .editor-tracker .page.sampler .tabs .tabs-switch {
   height: 28px;

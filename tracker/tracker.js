@@ -23,6 +23,14 @@
         whole:   4,
     };
 
+    var VOLUME_DEFAULTS = [
+        [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5],
+        [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.50, 0.54, 0.575, 0.60, 0.64],
+        [0.03125, 0.043, 0.056, 0.087, 0.1, 0.13, 0.18, 0.23, 0.3, 0.37, 0.42, 0.46, 0.5, 0.55, 0.58, 0.65],
+        [0, 0.17, 0.28, 0.37, 0.43, 0.49, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5],
+        [0.5, 0.74, 0.86, 0.73, 0.57, 0.49, 0.49, 0.49, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
+    ];
+
     this.EditorTracker = function ($container, data) {
         var self = this;
 
@@ -139,7 +147,7 @@
                 case CANVAS_MODES.VOLUME:
                     stepX = this.waveformEditor.width / RetroSound.VOLUME_STEPS;
 
-                    // this.soundchip.instruments[this.selectedInstrument].volume = _.map(_.range(32), function () { return Math.random(); });
+                    console.log(this.soundchip.instruments[this.selectedInstrument].volume);
 
                     _.each(this.soundchip.instruments[this.selectedInstrument].volume, function (y, x, volumes) {
                         self.waveformEditor.line(x * stepX,
@@ -210,6 +218,21 @@
 
         activateVolumeEditor: function () {
             var self = this;
+
+            if (!this.editorsInitialization.volume) {
+                this.container.find('.volume-default')
+                    .on('mousedown', function () {
+                        $(this).addClass('selected');
+                    })
+                    .on('mouseup', function () {
+                        $(this).removeClass('selected');
+                        self.soundchip.instruments[self.selectedInstrument].volume = VOLUME_DEFAULTS[parseInt($(this).data('default'))];
+                        self.drawWaveform(CANVAS_MODES.VOLUME);
+                    })
+                    .on('mouseout', function () {
+                        $(this).removeClass('selected');
+                    });
+            }
 
             function setValue (e) {
 
