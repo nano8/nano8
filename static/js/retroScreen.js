@@ -96,7 +96,7 @@
         line: function (x0, y0, x1, y1, c) {
             // bresenham midpoint circle algorithm to draw a pixel-perfect line
 
-            if (x0 === undefined || y0 === undefined || x1 === undefined || y1 === undefined) return;
+            if (!_.isFinite(x0 + y0 + x1 + y1)) return;
 
             x0 = Math.floor(x0);
             y0 = Math.floor(y0);

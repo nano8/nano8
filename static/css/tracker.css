@@ -265,6 +265,28 @@ html {
 .editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="pitch"] .glide.selected {
   background-position: -32px -156px;
 }
+.editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="tremolo"] .active {
+  width: 32px;
+  height: 32px;
+  background-image: url(../img/editor-ui.png);
+  background-position: 0 -156px;
+  cursor: pointer;
+}
+.editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="tremolo"] .active.selected {
+  background-position: -32px -156px;
+}
+.editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="tremolo"] .frequency {
+  position: absolute;
+  left: 150px;
+  width: 210px;
+  top: 0px;
+}
+.editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="tremolo"] .depth {
+  position: absolute;
+  left: 370px;
+  width: 208px;
+  top: 0px;
+}
 .editor .editor-tracker .page.sampler .tabs .tabs-switch {
   height: 28px;
   width: 600px;

@@ -7,9 +7,9 @@
     var NOTES                 = _.zipObject(ORDERED_NOTES);
     var ANTI_CLICK_ADJUSTMENT = 0.01;
 
-    var MODULATIONS_STEPS = 16;
-    var VOLUME_DEPTH      = 64;
-    var PITCH_DEPTH       = 64;
+    var MODULATIONS_STEPS     = 16;
+    var MODULATION_DEPTH      = 64;
+    var TREMOLO_MAX_FREQUENCY = 20;
 
     var NOISE_BASE_FREQUENCY         = 5000;
     var NOISE_BASE_Q                 = -7000;
@@ -38,7 +38,19 @@
             amp.connect(this.output);
             amp.gain.value = 0;
 
+            var tremoloGain = this.context.createGain();
+            tremoloGain.connect(amp.gain);
+            tremoloGain.gain.value = instrument.tremolo.active ? instrument.tremolo.depth : 0;
+
+            var tremoloOsc = this.context.createOscillator();
+            tremoloOsc.type = 'sine';
+            tremoloOsc.connect(tremoloGain);
+            tremoloOsc.frequency.value = instrument.tremolo.frequency;
+            tremoloOsc.start();
+
             instrument.amp         = amp;
+            instrument.tremoloOsc  = tremoloOsc;
+            instrument.tremoloGain = tremoloGain;
             instrument.playingNote = null;
 
             this.instruments.push(instrument);
@@ -59,10 +71,10 @@
                 volume:         _.map(_.range(MODULATIONS_STEPS), function () { return 0.5; }),
                 pitch:          _.map(_.range(MODULATIONS_STEPS), function () { return 0.5; }),
                 glide:         false,
-                tremolo:       {
-                    active:    true,
-                    depth:     1,
-                    frequency: 1000
+                tremolo: {
+                    active:    false,
+                    depth:     (MODULATION_DEPTH / 2) * (1 / MODULATION_DEPTH),
+                    frequency: TREMOLO_MAX_FREQUENCY / 2
                 }
             };
         },
@@ -114,6 +126,7 @@
                 biquadFilter.Q.value       = NOISE_BASE_Q;
             }
 
+
             oscillator.start();
 
             var startTime = self.context.currentTime;
@@ -122,6 +135,11 @@
             // initial volume ramp up
             instrument.amp.gain.setValueAtTime(0, startTime);
             instrument.amp.gain.linearRampToValueAtTime(instrument.volume[0], startTime + ANTI_CLICK_ADJUSTMENT);
+
+            // toggle tremolo and setup
+            instrument.tremoloOsc.frequency.value = instrument.tremolo.frequency
+            instrument.tremoloGain.gain.setValueAtTime(0, startTime);
+            instrument.tremoloGain.gain.linearRampToValueAtTime(instrument.tremolo.active ? instrument.tremolo.depth : 0, startTime + ANTI_CLICK_ADJUSTMENT);
 
             // apply volume and pitch modulations
             var ticks = timeInSeconds / MODULATIONS_STEPS;
@@ -132,10 +150,6 @@
                 var pitch           = instrument.pitch[i];
                 var pitchShift      = (-0.5 + pitch) * (instrument.oscillatorType === 'noise' ? NOISE_PITCH_SHIFT_ADJUSTMENT : PITCH_SHIFT_ADJUSTMENT);
                 var targetFrequency = (noteFrequency - initialPitchShift) + pitchShift
-
-                if (instrument.oscillatorType === 'noise') {
-
-                }
 
                 // ignore the first volume slide as it's already set
                 instrument.amp.gain.linearRampToValueAtTime(volume, startTime + (ticks * i) + ANTI_CLICK_ADJUSTMENT);
@@ -148,8 +162,14 @@
             self.clock.callbackAtTime(function () {
                 var currentTime = self.context.currentTime;
 
+                // gradually stop the note
                 instrument.amp.gain.setValueAtTime(_.last(self.instruments[instrumentId].volume), currentTime);
                 instrument.amp.gain.linearRampToValueAtTime(0.0, currentTime + ANTI_CLICK_ADJUSTMENT);
+
+                // gradually stop the tremolo
+                instrument.tremoloGain.gain.setValueAtTime(instrument.tremoloGain.gain.value, currentTime);
+                instrument.tremoloGain.gain.linearRampToValueAtTime(0.0, currentTime + ANTI_CLICK_ADJUSTMENT);
+
                 oscillator.stop(currentTime + (ANTI_CLICK_ADJUSTMENT * 2));
 
                 if (doneCallback !== undefined) doneCallback();
@@ -165,11 +185,11 @@
         TRIANGLE: 'triangle',
         NOISE:    'noise'
     };
-    RetroSound.ORDERED_NOTES     = ORDERED_NOTES;
-    RetroSound.NOTES             = NOTES;
-    RetroSound.MODULATIONS_STEPS = MODULATIONS_STEPS;
-    RetroSound.VOLUME_DEPTH      = VOLUME_DEPTH;
-    RetroSound.PITCH_DEPTH       = PITCH_DEPTH;
+    RetroSound.ORDERED_NOTES         = ORDERED_NOTES;
+    RetroSound.NOTES                 = NOTES;
+    RetroSound.MODULATIONS_STEPS     = MODULATIONS_STEPS;
+    RetroSound.MODULATION_DEPTH      = MODULATION_DEPTH;
+    RetroSound.TREMOLO_MAX_FREQUENCY = TREMOLO_MAX_FREQUENCY;
 
     this.RetroSound = RetroSound;
 })(this);

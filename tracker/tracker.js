@@ -55,7 +55,7 @@
         // audio functions
         this.playingSound       = false;
         this.selectedInstrument = 0;
-        this.testNoteLength     = (1000 / (TEST_NOTE_BPM / 60)) * TEST_NOTE_LENGTHS.eight;
+        this.testNoteLength     = (1000 / (TEST_NOTE_BPM / 60)) * TEST_NOTE_LENGTHS.quarter;
 
         // noise wave representation
         this.noiseWaveDrawing = _.map(_.range(this.waveformEditor.width), function () { return Math.random() * self.waveformEditor.height; });
@@ -147,7 +147,6 @@
                     case RetroSound.OSC_TYPES.NOISE:
                         y = self.noiseWaveDrawing[x];
                         break;
-
                 }
 
                 self.waveformEditor.line(lastX, lastY, x, y, Spico.PICO_DEFAULT_COLORS_VALUES[5]);
@@ -184,6 +183,28 @@
                     break;
                 case CANVAS_MODES.PITCH:
                     drawBars(RetroSound.MODULATIONS_STEPS, 'pitch');
+                    break;
+                case CANVAS_MODES.TREMOLO:
+                    if (self.soundchip.instruments[self.selectedInstrument].tremolo.active) {
+                        lastX = undefined;
+                        lastY = undefined;
+
+                        _.times(this.waveformEditor.width, function (x) {
+                            var y;
+                            var depth     = self.soundchip.instruments[self.selectedInstrument].tremolo.depth;
+                            var frequency = self.soundchip.instruments[self.selectedInstrument].tremolo.frequency;
+
+                            lastY = lastY === undefined ? self.waveformEditor.height / 2 : lastY;
+                            lastX = lastX === undefined ? 0 : lastX;
+
+                            y = (Math.sin(x / Math.max(RetroSound.TREMOLO_MAX_FREQUENCY - frequency, 1))) * ((self.waveformEditor.height / 2) * depth) + (self.waveformEditor.height / 2);
+
+                            self.waveformEditor.line(lastX, lastY, x, y, Spico.PICO_DEFAULT_COLORS_VALUES[8]);
+
+                            lastX = x;
+                            lastY = y;
+                        });
+                    }
                     break;
             }
 
@@ -287,7 +308,7 @@
                     });
             }
 
-            this.activateBarEditor('volume', CANVAS_MODES.VOLUME, RetroSound.MODULATIONS_STEPS, RetroSound.VOLUME_DEPTH);
+            this.activateBarEditor('volume', CANVAS_MODES.VOLUME, RetroSound.MODULATIONS_STEPS, RetroSound.MODULATION_DEPTH);
 
             this.drawWaveform(CANVAS_MODES.VOLUME);
         },
@@ -304,16 +325,16 @@
                             $(this).addClass('selected');
                         }
                         self.soundchip.instruments[self.selectedInstrument].glide = !self.soundchip.instruments[self.selectedInstrument].glide;
-                    })
+                    });
             }
 
             if (self.soundchip.instruments[self.selectedInstrument].glide) {
-                $(this).addClass('selected');
+                this.container.find('.glide').addClass('selected');
             } else {
-                $(this).removeClass('selected');
+                this.container.find('.glide').removeClass('selected');
             }
 
-            this.activateBarEditor('pitch', CANVAS_MODES.PITCH, RetroSound.MODULATIONS_STEPS, RetroSound.PITCH_DEPTH);
+            this.activateBarEditor('pitch', CANVAS_MODES.PITCH, RetroSound.MODULATIONS_STEPS, RetroSound.MODULATION_DEPTH);
 
             this.drawWaveform(CANVAS_MODES.PITCH);
         },
@@ -321,8 +342,45 @@
             var self = this;
 
             if (!this.editorsInitialization.tremolo)  {
+                this.container.find('.panel[data-panel="tremolo"] .active')
+                    .on('click', function () {
+                        if (self.soundchip.instruments[self.selectedInstrument].tremolo.active) {
+                            $(this).removeClass('selected');
+                        } else {
+                            $(this).addClass('selected');
+                        }
+                        self.soundchip.instruments[self.selectedInstrument].tremolo.active = !self.soundchip.instruments[self.selectedInstrument].tremolo.active;
+
+                        self.drawWaveform(CANVAS_MODES.TREMOLO);
+                    });
+
+                this.container.find('.panel[data-panel="tremolo"] .frequency input[type=range]').on('input', function () {
+                    var newFrequency = parseFloat($(this).val());
+
+                    self.container.find('.panel[data-panel="tremolo"] .frequency span.value').text(newFrequency);
+                    self.soundchip.instruments[self.selectedInstrument].tremolo.frequency = newFrequency;
+
+                    self.drawWaveform(CANVAS_MODES.TREMOLO);
+                });
+                this.container.find('.panel[data-panel="tremolo"] .depth input[type=range]').on('input', function () {
+                    var newDepth = parseFloat($(this).val());
+
+                    self.container.find('.panel[data-panel="tremolo"] .depth span.value').text(newDepth);
+                    self.soundchip.instruments[self.selectedInstrument].tremolo.depth = newDepth * (1 / RetroSound.MODULATION_DEPTH);
+
+                    self.drawWaveform(CANVAS_MODES.TREMOLO);
+                });
 
             }
+
+            if (self.soundchip.instruments[self.selectedInstrument].tremolo.active) {
+                this.container.find('.panel[data-panel="tremolo"] .active').addClass('selected');
+            } else {
+                this.container.find('.panel[data-panel="tremolo"] .active').removeClass('selected');
+            }
+
+            this.container.find('.panel[data-panel="tremolo"] .frequency input[type=range]').val(this.soundchip.instruments[this.selectedInstrument].tremolo.frequency).trigger('input');
+            this.container.find('.panel[data-panel="tremolo"] .depth input[type=range]').val(this.soundchip.instruments[this.selectedInstrument].tremolo.depth * RetroSound.MODULATION_DEPTH).trigger('input');
 
             this.drawWaveform(CANVAS_MODES.TREMOLO);
         },
