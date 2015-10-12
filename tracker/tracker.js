@@ -433,9 +433,15 @@
 
             if (this.playingSound) return;
 
-            this.soundchip.playNote(this.selectedInstrument, TEST_NOTE, this.testNoteLength, function () {
-                self.playingSound = false;
+            this.soundchip.playNote({
+                instrumentId: this.selectedInstrument,
+                note: TEST_NOTE,
+                time: this.testNoteLength,
+                doneCallback: function () {
+                    self.playingSound = false;
+                }
             });
+
             this.playingSound = true;
         }
     }

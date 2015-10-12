@@ -91,14 +91,24 @@
                     frequency: TREMOLO_MAX_FREQUENCY / 2
                 },
                 vibrato: {
-                    active:    true,
+                    active:    false,
                     depth:     (MODULATION_DEPTH / 2) * (1 / MODULATION_DEPTH),
                     frequency: VIBRATO_MAX_FREQUENCY / 2
+                },
+                arpeggio: {
+                    active:    true,
+                    notes:     [3, 5, 7, -12]
                 }
             };
         },
 
-        playNote: function (instrumentId, note, time, doneCallback) {
+        playNote: function (noteData) {
+
+            var instrumentId = noteData.instrumentId;
+            var note         = noteData.note;
+            var time         = noteData.time;
+            var doneCallback = noteData.doneCallback;
+
             var self = this;
 
             var timeInSeconds = time / 1000;
