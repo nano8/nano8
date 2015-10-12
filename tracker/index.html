@@ -41,8 +41,8 @@
                         <div class="switch" data-panel="wave">WAV</div>
                         <div class="switch" data-panel="volume">VOL</div>
                         <div class="switch" data-panel="pitch">PTC</div>
-                        <div class="switch selected" data-panel="tremolo">TRE</div>
-                        <div class="switch" data-panel="vibrato">VIB</div>
+                        <div class="switch" data-panel="tremolo">TRE</div>
+                        <div class="switch selected" data-panel="vibrato">VIB</div>
                         <div class="switch" data-panel="arpeggio">ARP</div>
                         <div class="switch" data-panel="filter">FLT</div>
                         <div class="switch" data-panel="effects">SFX</div>
@@ -82,7 +82,7 @@
                         <div class="panel" data-panel="tremolo">
                             <div class="label">Active</div>
                             <div class="active"></div>
-                           <div class="frequency">
+                            <div class="frequency">
                                 <div class="label">Frequency <span class="value">10</span></div>
                                 <input type="range" name="frequency" min="0" max="20">
                             </div>
@@ -91,7 +91,18 @@
                                 <input type="range" name="depth" min="0" max="64">
                             </div>
                         </div>
-                        <div class="panel" data-panel="vibrato"></div>
+                        <div class="panel" data-panel="vibrato">
+                            <div class="label">Active</div>
+                            <div class="active"></div>
+                            <div class="frequency">
+                                <div class="label">Frequency <span class="value">10</span></div>
+                                <input type="range" name="frequency" min="0" max="20">
+                            </div>
+                           <div class="depth">
+                                <div class="label">Depth <span class="value">34</span></div>
+                                <input type="range" name="depth" min="0" max="64">
+                            </div>
+                        </div>
                         <div class="panel" data-panel="arpeggio"></div>
                         <div class="panel" data-panel="filter"></div>
                         <div class="panel" data-panel="effects"></div>

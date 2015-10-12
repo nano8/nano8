@@ -11,6 +11,9 @@
     var MODULATION_DEPTH      = 64;
     var TREMOLO_MAX_FREQUENCY = 20;
 
+    var VIBRATO_MAX_FREQUENCY    = 20;
+    var VIBRATO_DEPTH_ADJUSTMENT = 500;
+
     var NOISE_BASE_FREQUENCY         = 5000;
     var NOISE_BASE_Q                 = -7000;
     var NOISE_PITCH_SHIFT_ADJUSTMENT = 40000;
@@ -48,9 +51,20 @@
             tremoloOsc.frequency.value = instrument.tremolo.frequency;
             tremoloOsc.start();
 
+            var vibratoGain = this.context.createGain();
+            vibratoGain.gain.value = instrument.vibrato.active ? instrument.vibrato.depth * VIBRATO_DEPTH_ADJUSTMENT: 0;
+
+            var vibratoOsc = this.context.createOscillator();
+            vibratoOsc.type = 'sine';
+            vibratoOsc.connect(vibratoGain);
+            vibratoOsc.frequency.value = instrument.vibrato.frequency;
+            vibratoOsc.start();
+
             instrument.amp         = amp;
             instrument.tremoloOsc  = tremoloOsc;
             instrument.tremoloGain = tremoloGain;
+            instrument.vibratoOsc  = vibratoOsc;
+            instrument.vibratoGain = vibratoGain;
             instrument.playingNote = null;
 
             this.instruments.push(instrument);
@@ -75,6 +89,11 @@
                     active:    false,
                     depth:     (MODULATION_DEPTH / 2) * (1 / MODULATION_DEPTH),
                     frequency: TREMOLO_MAX_FREQUENCY / 2
+                },
+                vibrato: {
+                    active:    true,
+                    depth:     (MODULATION_DEPTH / 2) * (1 / MODULATION_DEPTH),
+                    frequency: VIBRATO_MAX_FREQUENCY / 2
                 }
             };
         },
@@ -126,7 +145,6 @@
                 biquadFilter.Q.value       = NOISE_BASE_Q;
             }
 
-
             oscillator.start();
 
             var startTime = self.context.currentTime;
@@ -141,6 +159,17 @@
             instrument.tremoloGain.gain.setValueAtTime(0, startTime);
             instrument.tremoloGain.gain.linearRampToValueAtTime(instrument.tremolo.active ? instrument.tremolo.depth : 0, startTime + ANTI_CLICK_ADJUSTMENT);
 
+            // setup vibrato
+            if (instrument.vibrato.active) {
+                instrument.vibratoOsc.frequency.value = instrument.vibrato.frequency;
+
+                instrument.vibratoGain.gain.setValueAtTime(0, startTime);
+                instrument.vibratoGain.gain.linearRampToValueAtTime(instrument.vibrato.active ? instrument.vibrato.depth * VIBRATO_DEPTH_ADJUSTMENT: 0, startTime + ANTI_CLICK_ADJUSTMENT);
+
+                instrument.vibratoGain.connect(oscillator.frequency);
+            }
+
+
             // apply volume and pitch modulations
             var ticks = timeInSeconds / MODULATIONS_STEPS;
             _.times(MODULATIONS_STEPS, function (i) {
@@ -154,8 +183,10 @@
                 // ignore the first volume slide as it's already set
                 instrument.amp.gain.linearRampToValueAtTime(volume, startTime + (ticks * i) + ANTI_CLICK_ADJUSTMENT);
 
-                // ignore the first pitch slide as it's already set
-                oscillator.frequency.linearRampToValueAtTime(targetFrequency, startTime + (ticks * i) + ANTI_CLICK_ADJUSTMENT);
+                // ignore the first pitch slide as it's already set or if pitch modulation is enabled
+                if (!instrument.vibrato.active) {
+                    oscillator.frequency.linearRampToValueAtTime(targetFrequency, startTime + (ticks * i) + ANTI_CLICK_ADJUSTMENT);
+                }
             });
 
             // stop the oscillator
@@ -171,6 +202,7 @@
                 instrument.tremoloGain.gain.linearRampToValueAtTime(0.0, currentTime + ANTI_CLICK_ADJUSTMENT);
 
                 oscillator.stop(currentTime + (ANTI_CLICK_ADJUSTMENT * 2));
+                instrument.vibratoGain.disconnect();
 
                 if (doneCallback !== undefined) doneCallback();
             }, stopTime - ANTI_CLICK_ADJUSTMENT)

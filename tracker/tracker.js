@@ -12,7 +12,8 @@
         DEFAULT: 0,
         VOLUME:  1,
         PITCH:   2,
-        TREMOLO: 3
+        TREMOLO: 3,
+        VIBRATO: 4
     };
 
     var TEST_NOTE          = 'C4';
@@ -48,7 +49,8 @@
             wave:    false,
             volume:  false,
             pitch:   false,
-            tremolo: false
+            tremolo: false,
+            vibrato: false
         };
         this.isDrawing = false;
 
@@ -89,6 +91,9 @@
                     break;
                 case 'tremolo':
                     self.activateTremoloEditor();
+                    break;
+                case 'vibrato':
+                    self.activateVibratoEditor();
                     break;
             }
         });
@@ -177,6 +182,25 @@
                 });
             }
 
+            function drawModulationSine(depth, frequency, max) {
+                lastX = undefined;
+                lastY = undefined;
+
+                _.times(self.waveformEditor.width, function (x) {
+                    var y;
+
+                    lastY = lastY === undefined ? self.waveformEditor.height / 2 : lastY;
+                    lastX = lastX === undefined ? 0 : lastX;
+
+                    y = (Math.sin(x / Math.max(max - frequency, 1))) * ((self.waveformEditor.height / 2) * depth) + (self.waveformEditor.height / 2);
+
+                    self.waveformEditor.line(lastX, lastY, x, y, Spico.PICO_DEFAULT_COLORS_VALUES[8]);
+
+                    lastX = x;
+                    lastY = y;
+                });
+            }
+
             switch (mode) {
                 case CANVAS_MODES.VOLUME:
                     drawBars(RetroSound.MODULATIONS_STEPS, 'volume');
@@ -186,26 +210,15 @@
                     break;
                 case CANVAS_MODES.TREMOLO:
                     if (self.soundchip.instruments[self.selectedInstrument].tremolo.active) {
-                        lastX = undefined;
-                        lastY = undefined;
-
-                        _.times(this.waveformEditor.width, function (x) {
-                            var y;
-                            var depth     = self.soundchip.instruments[self.selectedInstrument].tremolo.depth;
-                            var frequency = self.soundchip.instruments[self.selectedInstrument].tremolo.frequency;
-
-                            lastY = lastY === undefined ? self.waveformEditor.height / 2 : lastY;
-                            lastX = lastX === undefined ? 0 : lastX;
-
-                            y = (Math.sin(x / Math.max(RetroSound.TREMOLO_MAX_FREQUENCY - frequency, 1))) * ((self.waveformEditor.height / 2) * depth) + (self.waveformEditor.height / 2);
-
-                            self.waveformEditor.line(lastX, lastY, x, y, Spico.PICO_DEFAULT_COLORS_VALUES[8]);
-
-                            lastX = x;
-                            lastY = y;
-                        });
+                        drawModulationSine(self.soundchip.instruments[self.selectedInstrument].tremolo.depth, self.soundchip.instruments[self.selectedInstrument].tremolo.frequency, RetroSound.TREMOLO_MAX_FREQUENCY);
                     }
                     break;
+                case CANVAS_MODES.VIBRATO:
+                    if (self.soundchip.instruments[self.selectedInstrument].vibrato.active) {
+                        drawModulationSine(self.soundchip.instruments[self.selectedInstrument].vibrato.depth, self.soundchip.instruments[self.selectedInstrument].vibrato.frequency, RetroSound.TREMOLO_MAX_FREQUENCY);
+                    }
+                    break;
+
             }
 
             this.waveformEditor.draw();
@@ -338,39 +351,48 @@
 
             this.drawWaveform(CANVAS_MODES.PITCH);
         },
+
+        activateFreqDepthEditor: function ($container, param, canvasDrawType) {
+            var self = this;
+
+            $container.find('.active')
+                .on('click', function () {
+                    if (self.soundchip.instruments[self.selectedInstrument][param].active) {
+                        $(this).removeClass('selected');
+                    } else {
+                        $(this).addClass('selected');
+                    }
+                    self.soundchip.instruments[self.selectedInstrument][param].active = !self.soundchip.instruments[self.selectedInstrument][param].active;
+
+                    self.drawWaveform(canvasDrawType);
+                });
+
+            $container.find('.frequency input[type=range]').on('input', function () {
+                var newFrequency = parseFloat($(this).val());
+
+                $container.find('.frequency span.value').text(newFrequency);
+                self.soundchip.instruments[self.selectedInstrument][param].frequency = newFrequency;
+
+                self.drawWaveform(canvasDrawType);
+            });
+            $container.find('.depth input[type=range]').on('input', function () {
+                var newDepth = parseFloat($(this).val());
+
+                $container.find('.depth span.value').text(newDepth);
+                self.soundchip.instruments[self.selectedInstrument][param].depth = newDepth * (1 / RetroSound.MODULATION_DEPTH);
+
+                self.drawWaveform(canvasDrawType);
+            });
+
+        },
+
         activateTremoloEditor: function () {
             var self = this;
 
             if (!this.editorsInitialization.tremolo)  {
-                this.container.find('.panel[data-panel="tremolo"] .active')
-                    .on('click', function () {
-                        if (self.soundchip.instruments[self.selectedInstrument].tremolo.active) {
-                            $(this).removeClass('selected');
-                        } else {
-                            $(this).addClass('selected');
-                        }
-                        self.soundchip.instruments[self.selectedInstrument].tremolo.active = !self.soundchip.instruments[self.selectedInstrument].tremolo.active;
+                this.activateFreqDepthEditor(this.container.find('.panel[data-panel="tremolo"]'), 'tremolo', CANVAS_MODES.TREMOLO);
 
-                        self.drawWaveform(CANVAS_MODES.TREMOLO);
-                    });
-
-                this.container.find('.panel[data-panel="tremolo"] .frequency input[type=range]').on('input', function () {
-                    var newFrequency = parseFloat($(this).val());
-
-                    self.container.find('.panel[data-panel="tremolo"] .frequency span.value').text(newFrequency);
-                    self.soundchip.instruments[self.selectedInstrument].tremolo.frequency = newFrequency;
-
-                    self.drawWaveform(CANVAS_MODES.TREMOLO);
-                });
-                this.container.find('.panel[data-panel="tremolo"] .depth input[type=range]').on('input', function () {
-                    var newDepth = parseFloat($(this).val());
-
-                    self.container.find('.panel[data-panel="tremolo"] .depth span.value').text(newDepth);
-                    self.soundchip.instruments[self.selectedInstrument].tremolo.depth = newDepth * (1 / RetroSound.MODULATION_DEPTH);
-
-                    self.drawWaveform(CANVAS_MODES.TREMOLO);
-                });
-
+                this.editorsInitialization.tremolo = true;
             }
 
             if (self.soundchip.instruments[self.selectedInstrument].tremolo.active) {
@@ -383,6 +405,27 @@
             this.container.find('.panel[data-panel="tremolo"] .depth input[type=range]').val(this.soundchip.instruments[this.selectedInstrument].tremolo.depth * RetroSound.MODULATION_DEPTH).trigger('input');
 
             this.drawWaveform(CANVAS_MODES.TREMOLO);
+        },
+
+        activateVibratoEditor: function () {
+            var self = this;
+
+            if (!this.editorsInitialization.vibrato)  {
+                this.activateFreqDepthEditor(this.container.find('.panel[data-panel="vibrato"]'), 'vibrato', CANVAS_MODES.VIBRATO);
+
+                this.editorsInitialization.vibrato = true;
+            }
+
+            if (self.soundchip.instruments[self.selectedInstrument].vibrato.active) {
+                this.container.find('.panel[data-panel="vibrato"] .active').addClass('selected');
+            } else {
+                this.container.find('.panel[data-panel="vibrato"] .active').removeClass('selected');
+            }
+
+            this.container.find('.panel[data-panel="vibrato"] .frequency input[type=range]').val(this.soundchip.instruments[this.selectedInstrument].vibrato.frequency).trigger('input');
+            this.container.find('.panel[data-panel="vibrato"] .depth input[type=range]').val(this.soundchip.instruments[this.selectedInstrument].vibrato.depth * RetroSound.MODULATION_DEPTH).trigger('input');
+
+            this.drawWaveform(CANVAS_MODES.VIBRATO);
         },
 
         playSound: function () {
