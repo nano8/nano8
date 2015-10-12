@@ -215,7 +215,7 @@
                     break;
                 case CANVAS_MODES.VIBRATO:
                     if (self.soundchip.instruments[self.selectedInstrument].vibrato.active) {
-                        drawModulationSine(self.soundchip.instruments[self.selectedInstrument].vibrato.depth, self.soundchip.instruments[self.selectedInstrument].vibrato.frequency, RetroSound.TREMOLO_MAX_FREQUENCY);
+                        drawModulationSine(self.soundchip.instruments[self.selectedInstrument].vibrato.depth, self.soundchip.instruments[self.selectedInstrument].vibrato.frequency, RetroSound.VIBRATO_MAX_FREQUENCY);
                     }
                     break;
 
