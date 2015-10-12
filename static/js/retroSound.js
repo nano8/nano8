@@ -51,7 +51,12 @@
                 finetuning:     0,
                 volume:         _.map(_.range(MODULATIONS_STEPS), function () { return 0.5; }),
                 pitch:          _.map(_.range(MODULATIONS_STEPS), function () { return 0.5; }),
-                glide:         false
+                glide:         false,
+                tremolo:       {
+                    active:    true,
+                    depth:     1,
+                    frequency: 1000
+                }
             };
         },
 

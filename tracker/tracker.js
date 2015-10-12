@@ -11,7 +11,8 @@
     var CANVAS_MODES = {
         DEFAULT: 0,
         VOLUME:  1,
-        PITCH:   2
+        PITCH:   2,
+        TREMOLO: 3
     };
 
     var TEST_NOTE          = 'C4';
@@ -44,9 +45,10 @@
 
         // interface
         this.editorsInitialization = {
-            wave:   false,
-            volume: false,
-            pitch:  false
+            wave:    false,
+            volume:  false,
+            pitch:   false,
+            tremolo: false
         };
         this.isDrawing = false;
 
@@ -81,6 +83,9 @@
                     break;
                 case 'pitch':
                     self.activatePitchEditor();
+                    break;
+                case 'tremolo':
+                    self.activateTremoloEditor();
                     break;
             }
         });
@@ -308,6 +313,15 @@
             this.activateBarEditor('pitch', CANVAS_MODES.PITCH, RetroSound.MODULATIONS_STEPS, RetroSound.PITCH_DEPTH);
 
             this.drawWaveform(CANVAS_MODES.PITCH);
+        },
+        activateTremoloEditor: function () {
+            var self = this;
+
+            if (!this.editorsInitialization.tremolo) {
+
+            }
+
+            this.drawWaveform(CANVAS_MODES.TREMOLO);
         },
 
         playSound: function () {
