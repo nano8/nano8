@@ -93,25 +93,25 @@ html {
   cursor: pointer;
 }
 .editor .editor-tracker .page.sampler .note-lengths .note-length[data-length="eight"] {
-  background-position: -88px -100px;
+  background-position: 0px -100px;
 }
 .editor .editor-tracker .page.sampler .note-lengths .note-length[data-length="eight"].selected {
   background-image: url(../img/editor-ui.png), url(../img/editor-ui.png);
-  background-position: -88px -100px, -176px -100px;
+  background-position: 0px -100px, -176px -100px;
 }
 .editor .editor-tracker .page.sampler .note-lengths .note-length[data-length="quarter"] {
-  background-position: 0px -100px;
+  background-position: -44px -100px;
 }
 .editor .editor-tracker .page.sampler .note-lengths .note-length[data-length="quarter"].selected {
   background-image: url(../img/editor-ui.png), url(../img/editor-ui.png);
-  background-position: 0px -100px, -176px -100px;
+  background-position: -44px -100px, -176px -100px;
 }
 .editor .editor-tracker .page.sampler .note-lengths .note-length[data-length="half"] {
-  background-position: -44px -100px;
+  background-position: -88px -100px;
 }
 .editor .editor-tracker .page.sampler .note-lengths .note-length[data-length="half"].selected {
   background-image: url(../img/editor-ui.png), url(../img/editor-ui.png);
-  background-position: -44px -100px, -176px -100px;
+  background-position: -88px -100px, -176px -100px;
 }
 .editor .editor-tracker .page.sampler .note-lengths .note-length[data-length="whole"] {
   background-position: -132px -100px;

@@ -11,6 +11,13 @@
     var VOLUME_DEPTH      = 64;
     var PITCH_DEPTH       = 64;
 
+    var NOISE_BASE_FREQUENCY         = 5000;
+    var NOISE_BASE_Q                 = -7000;
+    var NOISE_PITCH_SHIFT_ADJUSTMENT = 40000;
+    var NOISE_NOTE_ADJUSTMENT        = 50;
+
+    var PITCH_SHIFT_ADJUSTMENT = 200;
+
     // normalize AudioContext across browsers
     window.AudioContext = window.AudioContext||window.webkitAudioContext;
 
@@ -71,7 +78,13 @@
                 note = ORDERED_NOTES[currentNoteIndex + instrument.tuning][0];
             }
 
-            var noteFrequency = NOTES[note] + instrument.finetuning + instrument.pitch[0];
+            var initialPitchShift = ((-0.5 + instrument.pitch[0]) * PITCH_SHIFT_ADJUSTMENT);
+            var noteFrequency     = NOTES[note] + instrument.finetuning + initialPitchShift;
+
+            if (instrument.oscillatorType === 'noise') {
+                initialPitchShift = ((-0.5 + instrument.pitch[0]) * NOISE_PITCH_SHIFT_ADJUSTMENT);
+                noteFrequency = ((NOTES[note] * NOISE_NOTE_ADJUSTMENT) + initialPitchShift) + NOISE_BASE_FREQUENCY
+            }
 
             var oscillator;
 
@@ -86,18 +99,19 @@
                 var output      = noiseBuffer.getChannelData(0);
 
                 var biquadFilter = this.context.createBiquadFilter();
+                biquadFilter.type = 'lowpass';
                 biquadFilter.connect(this.instruments[instrumentId].amp);
 
-                for (var i = 0; i < bufferSize; i++) {
-                    output[i] = Math.random() * 2 - 1;
-                }
+                _.times(bufferSize, function (i) { output[i] = Math.random() * 2 - 1; });
 
-                oscillator        = this.context.createBufferSource();
-                oscillator.buffer = noiseBuffer;
-                oscillator.loop   = true;
-                oscillator.connect(biquadFilter);
+                oscillator           = this.context.createBufferSource();
+                oscillator.buffer    = noiseBuffer;
+                oscillator.loop      = true;
                 oscillator.frequency = biquadFilter.frequency;
-                oscillator.frequency.value = noteFrequency + 1000;
+                oscillator.connect(biquadFilter);
+
+                oscillator.frequency.value = noteFrequency;
+                biquadFilter.Q.value       = NOISE_BASE_Q;
             }
 
             oscillator.start();
@@ -112,16 +126,22 @@
             // apply volume and pitch modulations
             var ticks = timeInSeconds / MODULATIONS_STEPS;
             _.times(MODULATIONS_STEPS, function (i) {
-                var volume = instrument.volume[i];
-                var pitch  = instrument.pitch[i];
-
                 if (i === 0) return;
+
+                var volume          = instrument.volume[i];
+                var pitch           = instrument.pitch[i];
+                var pitchShift      = (-0.5 + pitch) * (instrument.oscillatorType === 'noise' ? NOISE_PITCH_SHIFT_ADJUSTMENT : PITCH_SHIFT_ADJUSTMENT);
+                var targetFrequency = (noteFrequency - initialPitchShift) + pitchShift
+
+                if (instrument.oscillatorType === 'noise') {
+
+                }
 
                 // ignore the first volume slide as it's already set
                 instrument.amp.gain.linearRampToValueAtTime(volume, startTime + (ticks * i) + ANTI_CLICK_ADJUSTMENT);
 
                 // ignore the first pitch slide as it's already set
-                oscillator.frequency.linearRampToValueAtTime(noteFrequency + ((0.5 - pitch) * 200), startTime + (ticks * i) + ANTI_CLICK_ADJUSTMENT);
+                oscillator.frequency.linearRampToValueAtTime(targetFrequency, startTime + (ticks * i) + ANTI_CLICK_ADJUSTMENT);
             });
 
             // stop the oscillator

@@ -154,25 +154,25 @@ body, html {
                     cursor:              pointer;
 
                     &[data-length="eight"] {
-                        .image-ui-note-length-pos(2);
-                        &.selected {
-                            .image-ui-note-length-pos(2, 1);
-                        }
-                    }
-                    &[data-length="quarter"] {
                         .image-ui-note-length-pos(0);
                         &.selected {
                             .image-ui-note-length-pos(0, 1);
                         }
                     }
-                    &[data-length="half"] {
+                    &[data-length="quarter"] {
                         .image-ui-note-length-pos(1);
                         &.selected {
                             .image-ui-note-length-pos(1, 1);
                         }
                     }
+                    &[data-length="half"] {
+                        .image-ui-note-length-pos(2);
+                        &.selected {
+                            .image-ui-note-length-pos(2, 1);
+                        }
+                    }
                     &[data-length="whole"] {
-                        .image-ui-note-length-pos(3 );
+                        .image-ui-note-length-pos(3);
                         &.selected {
                             .image-ui-note-length-pos(3, 1);
                         }

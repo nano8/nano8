@@ -57,6 +57,9 @@
         this.selectedInstrument = 0;
         this.testNoteLength     = (1000 / (TEST_NOTE_BPM / 60)) * TEST_NOTE_LENGTHS.eight;
 
+        // noise wave representation
+        this.noiseWaveDrawing = _.map(_.range(this.waveformEditor.width), function () { return Math.random() * self.waveformEditor.height; });
+
         // create the soundchip
         this.soundchip = new RetroSound();
         DEFAULT_INSTRUMENTS = [this.soundchip.generateDefaultInstrument()];
@@ -142,7 +145,7 @@
                         y = Math.abs(((x / 3) % 24) - 12) * 2 + 28;
                         break;
                     case RetroSound.OSC_TYPES.NOISE:
-                        y = Math.random() * self.waveformEditor.height;
+                        y = self.noiseWaveDrawing[x];
                         break;
 
                 }
@@ -317,7 +320,7 @@
         activateTremoloEditor: function () {
             var self = this;
 
-            if (!this.editorsInitialization.tremolo) {
+            if (!this.editorsInitialization.tremolo)  {
 
             }
 
