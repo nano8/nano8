@@ -1,3 +1,13 @@
+.image-ui-checkbutton {
+  width: 32px;
+  height: 32px;
+  background-image: url(../img/editor-ui.png);
+  background-position: 0 -156px;
+  cursor: pointer;
+}
+.image-ui-checkbutton.selected {
+  background-position: -32px -156px;
+}
 @font-face {
   font-family: 'kongtextregular';
   src: url('../fnt/kongtext-webfont.eot');
@@ -10,12 +20,12 @@
 body,
 html {
   font-family: 'kongtextregular';
-  color: #FF9300;
+  color: #ff9300;
 }
 .header {
   width: 640px;
   height: 32px;
-  background: #FF9300;
+  background: #ff9300;
 }
 .editor {
   width: 640px;
@@ -36,8 +46,8 @@ html {
   width: 100%;
   height: 8px;
   cursor: pointer;
-  border-top: 4px solid #FFEEE2;
-  border-bottom: 4px solid #FF9300;
+  border-top: 4px solid #ffeee2;
+  border-bottom: 4px solid #ff9300;
 }
 .editor .editor-tracker input[type=range]::-webkit-slider-thumb {
   -webkit-appearance: none;
@@ -56,7 +66,7 @@ html {
 .editor .editor-tracker .page.sampler {
   width: 640px;
   height: 544px;
-  background: #70608B;
+  background: #70608b;
   position: relative;
 }
 .editor .editor-tracker .page.sampler .waveform {
@@ -119,8 +129,8 @@ html {
 .editor .editor-tracker .page.sampler .tabs .panels {
   height: 96px;
   width: 600px;
-  background: #FFF300;
-  border: 4px solid #FF9300;
+  background: #fff300;
+  border: 4px solid #ff9300;
 }
 .editor .editor-tracker .page.sampler .tabs .panels .panel {
   width: 584px;
@@ -131,7 +141,7 @@ html {
   position: relative;
 }
 .editor .editor-tracker .page.sampler .tabs .panels .panel .label {
-  color: #9B3E26;
+  color: #9b3e26;
   margin-bottom: 16px;
 }
 .editor .editor-tracker .page.sampler .tabs .panels .panel.selected {
@@ -244,6 +254,16 @@ html {
 .editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="volume"] .volume-defaults .volume-default[data-default="4"].selected {
   background-image: url(../img/editor-ui.png), url(../img/editor-ui.png);
   background-position: -176px -64px, -220px -64px;
+}
+.editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="pitch"] .glide {
+  width: 32px;
+  height: 32px;
+  background-image: url(../img/editor-ui.png);
+  background-position: 0 -156px;
+  cursor: pointer;
+}
+.editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="pitch"] .glide.selected {
+  background-position: -32px -156px;
 }
 .editor .editor-tracker .page.sampler .tabs .tabs-switch {
   height: 28px;

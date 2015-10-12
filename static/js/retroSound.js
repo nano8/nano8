@@ -7,8 +7,9 @@
     var NOTES                 = _.zipObject(ORDERED_NOTES);
     var ANTI_CLICK_ADJUSTMENT = 0.01;
 
-    var VOLUME_STEPS = 16;
-    var VOLUME_DEPTH = 64;
+    var MODULATIONS_STEPS = 16;
+    var VOLUME_DEPTH      = 64;
+    var PITCH_DEPTH       = 64;
 
     // normalize AudioContext across browsers
     window.AudioContext = window.AudioContext||window.webkitAudioContext;
@@ -48,7 +49,9 @@
                 tuning:         0,
                 finetuning:     0,
                 finetuning:     0,
-                volume:         _.map(_.range(VOLUME_STEPS), function () { return 0.5; })
+                volume:         _.map(_.range(MODULATIONS_STEPS), function () { return 0.5; }),
+                pitch:          _.map(_.range(MODULATIONS_STEPS), function () { return 0.5; }),
+                glide:         false
             };
         },
 
@@ -63,12 +66,14 @@
                 note = ORDERED_NOTES[currentNoteIndex + instrument.tuning][0];
             }
 
+            var noteFrequency = NOTES[note] + instrument.finetuning + instrument.pitch[0];
+
             var oscillator;
 
             if (instrument.oscillatorType !== 'noise') {
                 oscillator                 = this.context.createOscillator();
                 oscillator.type            = instrument.oscillatorType;
-                oscillator.frequency.value = NOTES[note] + instrument.finetuning;
+                oscillator.frequency.value = noteFrequency;
                 oscillator.connect(this.instruments[instrumentId].amp);
             } else {
                 var bufferSize  = 2 * this.context.sampleRate;
@@ -87,7 +92,7 @@
                 oscillator.loop   = true;
                 oscillator.connect(biquadFilter);
                 oscillator.frequency = biquadFilter.frequency;
-                oscillator.frequency.value = NOTES[note] + 1000;
+                oscillator.frequency.value = noteFrequency + 1000;
             }
 
             oscillator.start();
@@ -96,25 +101,30 @@
             var stopTime  = startTime + timeInSeconds;
 
             // initial volume ramp up
-            self.instruments[instrumentId].amp.gain.setValueAtTime(0, startTime);
-            self.instruments[instrumentId].amp.gain.linearRampToValueAtTime(self.instruments[instrumentId].volume[0], startTime + ANTI_CLICK_ADJUSTMENT);
+            instrument.amp.gain.setValueAtTime(0, startTime);
+            instrument.amp.gain.linearRampToValueAtTime(instrument.volume[0], startTime + ANTI_CLICK_ADJUSTMENT);
 
-            // volume slides. ignore the first one because it's already set
-            var volumeTicks = timeInSeconds / self.instruments[instrumentId].volume.length;
-            _.each(self.instruments[instrumentId].volume, function (v, i, volumes) {
-                console.log(i, volumes.length - 1);
+            // apply volume and pitch modulations
+            var ticks = timeInSeconds / MODULATIONS_STEPS;
+            _.times(MODULATIONS_STEPS, function (i) {
+                var volume = instrument.volume[i];
+                var pitch  = instrument.pitch[i];
+
                 if (i === 0) return;
 
-                // self.instruments[instrumentId].amp.gain.setValueAtTime(volumes[i-1], startTime + (volumeTicks * i));
-                self.instruments[instrumentId].amp.gain.linearRampToValueAtTime(v, startTime + (volumeTicks * i) + ANTI_CLICK_ADJUSTMENT);
+                // ignore the first volume slide as it's already set
+                instrument.amp.gain.linearRampToValueAtTime(volume, startTime + (ticks * i) + ANTI_CLICK_ADJUSTMENT);
+
+                // ignore the first pitch slide as it's already set
+                oscillator.frequency.linearRampToValueAtTime(noteFrequency + ((0.5 - pitch) * 200), startTime + (ticks * i) + ANTI_CLICK_ADJUSTMENT);
             });
 
             // stop the oscillator
             self.clock.callbackAtTime(function () {
                 var currentTime = self.context.currentTime;
 
-                self.instruments[instrumentId].amp.gain.setValueAtTime(_.last(self.instruments[instrumentId].volume), currentTime);
-                self.instruments[instrumentId].amp.gain.linearRampToValueAtTime(0.0, currentTime + ANTI_CLICK_ADJUSTMENT);
+                instrument.amp.gain.setValueAtTime(_.last(self.instruments[instrumentId].volume), currentTime);
+                instrument.amp.gain.linearRampToValueAtTime(0.0, currentTime + ANTI_CLICK_ADJUSTMENT);
                 oscillator.stop(currentTime + (ANTI_CLICK_ADJUSTMENT * 2));
 
                 if (doneCallback !== undefined) doneCallback();
@@ -130,10 +140,11 @@
         TRIANGLE: 'triangle',
         NOISE:    'noise'
     };
-    RetroSound.ORDERED_NOTES = ORDERED_NOTES;
-    RetroSound.NOTES         = NOTES;
-    RetroSound.VOLUME_DEPTH  = VOLUME_DEPTH;
-    RetroSound.VOLUME_STEPS  = VOLUME_STEPS;
+    RetroSound.ORDERED_NOTES     = ORDERED_NOTES;
+    RetroSound.NOTES             = NOTES;
+    RetroSound.MODULATIONS_STEPS = MODULATIONS_STEPS;
+    RetroSound.VOLUME_DEPTH      = VOLUME_DEPTH;
+    RetroSound.PITCH_DEPTH       = PITCH_DEPTH;
 
     this.RetroSound = RetroSound;
 })(this);

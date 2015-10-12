@@ -44,6 +44,18 @@
     background-position: -(@image-ui-volume-default-width * @num) -64px, -(@image-ui-volume-default-width * 5) -64px;
 }
 
+.image-ui-checkbutton {
+    width:               32px;
+    height:              32px;
+    background-image:    @image-ui-url;
+    background-position: 0 -156px;
+    cursor:              pointer;
+
+    &.selected {
+        background-position: -32px -156px;
+    }
+}
+
 @pico-color-orange:    #FF9300;
 @pico-color-violet:    #70608B;
 @pico-color-black:     #000000;
@@ -308,6 +320,11 @@ body, html {
                                     }
 
                                 }
+                            }
+                        }
+                        &[data-panel="pitch"] {
+                            .glide {
+                                .image-ui-checkbutton
                             }
                         }
                     }

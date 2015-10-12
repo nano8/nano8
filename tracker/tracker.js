@@ -10,7 +10,8 @@
 
     var CANVAS_MODES = {
         DEFAULT: 0,
-        VOLUME:  1
+        VOLUME:  1,
+        PITCH:   2
     };
 
     var TEST_NOTE          = 'C4';
@@ -28,7 +29,7 @@
         [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.50, 0.54, 0.575, 0.60, 0.64],
         [0.03125, 0.043, 0.056, 0.087, 0.1, 0.13, 0.18, 0.23, 0.3, 0.37, 0.42, 0.46, 0.5, 0.55, 0.58, 0.65],
         [0, 0.17, 0.28, 0.37, 0.43, 0.49, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5],
-        [0.5, 0.74, 0.86, 0.73, 0.57, 0.49, 0.49, 0.49, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
+        [0.5, 0.74, 0.86, 0.73, 0.57, 0.47, 0.35, 0.27, 0.2, 0.16, 0.11, 0.087, 0.071, 0.04, 0.01, 0]
     ];
 
     this.EditorTracker = function ($container, data) {
@@ -44,7 +45,8 @@
         // interface
         this.editorsInitialization = {
             wave:   false,
-            volume: false
+            volume: false,
+            pitch:  false
         };
         this.isDrawing = false;
 
@@ -76,6 +78,9 @@
                     break;
                 case 'volume':
                     self.activateVolumeEditor();
+                    break;
+                case 'pitch':
+                    self.activatePitchEditor();
                     break;
             }
         });
@@ -143,28 +148,34 @@
                 lastY = y;
             });
 
+
+            function drawBars(steps, source) {
+                stepX = self.waveformEditor.width / steps;
+
+                _.each(self.soundchip.instruments[self.selectedInstrument][source], function (y, x, data) {
+                    self.waveformEditor.line(x * stepX,
+                        (1 - y) * self.waveformEditor.height,
+                        (x * stepX) + stepX,
+                        (1 - y) * self.waveformEditor.height,
+                        Spico.PICO_DEFAULT_COLORS_VALUES[8]);
+
+                    if (x === 0) return;
+
+                    self.waveformEditor.line(x * stepX,
+                        (1 - y) * self.waveformEditor.height,
+                        x * stepX,
+                        (1 - data[x-1]) * self.waveformEditor.height,
+                        Spico.PICO_DEFAULT_COLORS_VALUES[8]);
+
+                });
+            }
+
             switch (mode) {
                 case CANVAS_MODES.VOLUME:
-                    stepX = this.waveformEditor.width / RetroSound.VOLUME_STEPS;
-
-                    console.log(this.soundchip.instruments[this.selectedInstrument].volume);
-
-                    _.each(this.soundchip.instruments[this.selectedInstrument].volume, function (y, x, volumes) {
-                        self.waveformEditor.line(x * stepX,
-                            (1 - y) * self.waveformEditor.height,
-                            (x * stepX) + stepX,
-                            (1 - y) * self.waveformEditor.height,
-                            Spico.PICO_DEFAULT_COLORS_VALUES[8]);
-
-                        if (x === 0) return;
-
-                        self.waveformEditor.line(x * stepX,
-                            (1 - y) * self.waveformEditor.height,
-                            x * stepX,
-                            (1 - volumes[x-1]) * self.waveformEditor.height,
-                            Spico.PICO_DEFAULT_COLORS_VALUES[8]);
-
-                    });
+                    drawBars(RetroSound.MODULATIONS_STEPS, 'volume');
+                    break;
+                case CANVAS_MODES.PITCH:
+                    drawBars(RetroSound.MODULATIONS_STEPS, 'pitch');
                     break;
             }
 
@@ -179,6 +190,40 @@
             this.waveformEditor.onmouseout = function (e) {};
 
             this.waveformEditor.onmousemove = function (e) {};
+        },
+
+        activateBarEditor: function (target, canvasDrawType, steps, depth) {
+            var self = this;
+
+            function setValue (e) {
+
+                var x = Math.floor(e.retroLayerX / (self.waveformEditor.width / steps));
+                var y = Math.floor(e.retroLayerY / (self.waveformEditor.height / depth));
+                var y = 1 - (e.retroLayerY / self.waveformEditor.height);
+
+                self.soundchip.instruments[self.selectedInstrument][target][x] = y;
+
+                self.drawWaveform(canvasDrawType);
+            }
+
+            this.waveformEditor.onmousedown = function (e) {
+                self.isDrawing = true;
+                setValue(e);
+            };
+
+            this.waveformEditor.onmouseup = function (e) {
+                self.isDrawing = false;
+            };
+
+            this.waveformEditor.onmouseout = function (e) {
+                self.isDrawing = false;
+            };
+
+            this.waveformEditor.onmousemove = function (e) {
+                if (!self.isDrawing) return;
+
+                setValue(e);
+            };
         },
 
         activateWaveEditor: function () {
@@ -234,37 +279,35 @@
                     });
             }
 
-            function setValue (e) {
-
-                var x = Math.floor(e.retroLayerX / (self.waveformEditor.width / RetroSound.VOLUME_STEPS));
-                var y = Math.floor(e.retroLayerY / (self.waveformEditor.height / RetroSound.VOLUME_DEPTH));
-                var y = 1 - (e.retroLayerY / self.waveformEditor.height);
-
-                self.soundchip.instruments[self.selectedInstrument].volume[x] = y;
-
-                self.drawWaveform(CANVAS_MODES.VOLUME);
-            }
-
-            this.waveformEditor.onmousedown = function (e) {
-                self.isDrawing = true;
-                setValue(e);
-            };
-
-            this.waveformEditor.onmouseup = function (e) {
-                self.isDrawing = false;
-            };
-
-            this.waveformEditor.onmouseout = function (e) {
-                self.isDrawing = false;
-            };
-
-            this.waveformEditor.onmousemove = function (e) {
-                if (!self.isDrawing) return;
-
-                setValue(e);
-            };
+            this.activateBarEditor('volume', CANVAS_MODES.VOLUME, RetroSound.MODULATIONS_STEPS, RetroSound.VOLUME_DEPTH);
 
             this.drawWaveform(CANVAS_MODES.VOLUME);
+        },
+
+        activatePitchEditor: function () {
+            var self = this;
+
+            if (!this.editorsInitialization.pitch) {
+                this.container.find('.glide')
+                    .on('click', function () {
+                        if (self.soundchip.instruments[self.selectedInstrument].glide) {
+                            $(this).removeClass('selected');
+                        } else {
+                            $(this).addClass('selected');
+                        }
+                        self.soundchip.instruments[self.selectedInstrument].glide = !self.soundchip.instruments[self.selectedInstrument].glide;
+                    })
+            }
+
+            if (self.soundchip.instruments[self.selectedInstrument].glide) {
+                $(this).addClass('selected');
+            } else {
+                $(this).removeClass('selected');
+            }
+
+            this.activateBarEditor('pitch', CANVAS_MODES.PITCH, RetroSound.MODULATIONS_STEPS, RetroSound.PITCH_DEPTH);
+
+            this.drawWaveform(CANVAS_MODES.PITCH);
         },
 
         playSound: function () {
