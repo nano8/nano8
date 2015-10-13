@@ -50,7 +50,7 @@
         this.currentPage           = PAGES.SAMPLE_EDITOR;
         this.$pageSampler          = $container.find('.page.sampler');
         this.$waveformEditorCanvas = this.$pageSampler.find('canvas.waveform');
-        this.waveformEditor        = new RetroScreen(this.$waveformEditorCanvas, Spico.PICO_DEFAULT_COLORS_VALUES);
+        this.waveformEditor        = new RetroScreen(this.$waveformEditorCanvas, Nano.PICO_DEFAULT_COLORS_VALUES);
         this.waveformEditor.clear();
 
         // interface

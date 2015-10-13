@@ -92,7 +92,7 @@ function _init() {
 
 
     // callbacks and input
-    // spico-8 automatically loops
+    // nano-8 automatically loops
     // and calls _update() and
     // _draw() once per frame if
     // they exist
