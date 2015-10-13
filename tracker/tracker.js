@@ -9,11 +9,12 @@
     var DEFAULT_INSTRUMENTS = [];
 
     var CANVAS_MODES = {
-        DEFAULT: 0,
-        VOLUME:  1,
-        PITCH:   2,
-        TREMOLO: 3,
-        VIBRATO: 4
+        DEFAULT:  0,
+        VOLUME:   1,
+        PITCH:    2,
+        TREMOLO:  3,
+        VIBRATO:  4,
+        ARPEGGIO: 5
     };
 
     var TEST_NOTE          = 'C4';
@@ -52,17 +53,17 @@
 
         // interface
         this.editorsInitialization = {
-            wave:    false,
-            volume:  false,
-            pitch:   false,
-            tremolo: false,
-            vibrato: false
+            wave:     false,
+            volume:   false,
+            pitch:    false,
+            tremolo:  false,
+            vibrato:  false,
+            arpeggio: false
         };
         this.isDrawing = false;
 
         // audio functions
         this.playingSound       = false;
-        this.selectedInstrument = 0;
         this.testNoteLength     = (1000 / (TEST_NOTE_BPM / 60)) * TEST_NOTE_LENGTHS.quarter;
 
         // noise wave representation
@@ -72,6 +73,9 @@
         this.soundchip = new RetroSound();
         DEFAULT_INSTRUMENTS = [this.soundchip.generateDefaultInstrument()];
         this.soundchip.addInstruments(DEFAULT_INSTRUMENTS);
+
+        this.selectedInstrumentId = 0;
+        this.selectedInstrument   = this.soundchip.instruments[this.selectedInstrumentId];
 
         this.resetCanvasEvents();
 
@@ -100,6 +104,9 @@
                     break;
                 case 'vibrato':
                     self.activateVibratoEditor();
+                    break;
+                case 'arpeggio':
+                    self.activateArpeggioEditor();
                     break;
             }
         });
@@ -142,7 +149,7 @@
                 lastY = lastY === undefined ? self.waveformEditor.height / 2 : lastY;
                 lastX = lastX === undefined ? 0 : lastX;
 
-                switch (self.soundchip.instruments[self.selectedInstrument].oscillatorType) {
+                switch (self.selectedInstrument.oscillatorType) {
                     case RetroSound.OSC_TYPES.SINE:
                         y = (Math.sin(x / 9.62) * self.waveformEditor.height / 2) + self.waveformEditor.height / 2;
                         break;
@@ -170,7 +177,7 @@
             function drawBars(steps, source) {
                 stepX = self.waveformEditor.width / steps;
 
-                _.each(self.soundchip.instruments[self.selectedInstrument][source], function (y, x, data) {
+                _.each(self.selectedInstrument[source], function (y, x, data) {
                     self.waveformEditor.line(x * stepX,
                         (1 - y) * self.waveformEditor.height,
                         (x * stepX) + stepX,
@@ -215,16 +222,15 @@
                     drawBars(RetroSound.MODULATIONS_STEPS, 'pitch');
                     break;
                 case CANVAS_MODES.TREMOLO:
-                    if (self.soundchip.instruments[self.selectedInstrument].tremolo.active) {
-                        drawModulationSine(self.soundchip.instruments[self.selectedInstrument].tremolo.depth, self.soundchip.instruments[self.selectedInstrument].tremolo.frequency, RetroSound.TREMOLO_MAX_FREQUENCY);
+                    if (self.selectedInstrument.tremolo.active) {
+                        drawModulationSine(self.selectedInstrument.tremolo.depth, self.selectedInstrument.tremolo.frequency, RetroSound.TREMOLO_MAX_FREQUENCY);
                     }
                     break;
                 case CANVAS_MODES.VIBRATO:
-                    if (self.soundchip.instruments[self.selectedInstrument].vibrato.active) {
-                        drawModulationSine(self.soundchip.instruments[self.selectedInstrument].vibrato.depth, self.soundchip.instruments[self.selectedInstrument].vibrato.frequency, RetroSound.VIBRATO_MAX_FREQUENCY);
+                    if (self.selectedInstrument.vibrato.active) {
+                        drawModulationSine(self.selectedInstrument.vibrato.depth, self.selectedInstrument.vibrato.frequency, RetroSound.VIBRATO_MAX_FREQUENCY);
                     }
                     break;
-
             }
 
             this.waveformEditor.draw();
@@ -244,12 +250,11 @@
             var self = this;
 
             function setValue (e) {
-
                 var x = Math.floor(e.retroLayerX / (self.waveformEditor.width / steps));
                 var y = Math.floor(e.retroLayerY / (self.waveformEditor.height / depth));
                 var y = 1 - (e.retroLayerY / self.waveformEditor.height);
 
-                self.soundchip.instruments[self.selectedInstrument][target][x] = y;
+                self.selectedInstrument[target][x] = y;
 
                 self.drawWaveform(canvasDrawType);
             }
@@ -279,7 +284,7 @@
 
             if (!this.editorsInitialization.wave) {
                 this.container.find('.wave-type').on('click', function () {
-                    self.soundchip.instruments[self.selectedInstrument].oscillatorType = $(this).attr('data-wave');
+                    self.selectedInstrument.oscillatorType = $(this).attr('data-wave');
                     self.container.find('.wave-type').removeClass('selected');
                     $(this).addClass('selected');
                     self.drawWaveform();
@@ -289,22 +294,22 @@
                     var newFinetuning = parseFloat($(this).val());
 
                     self.container.find('.fine-tuning span.value').text((newFinetuning > 0 ? '+' : '') + newFinetuning);
-                    self.soundchip.instruments[self.selectedInstrument].finetuning = newFinetuning;
+                    self.selectedInstrument.finetuning = newFinetuning;
                 });
 
                 this.container.find('.tuning input[type=range]').on('input', function () {
                     var newTuning = parseInt($(this).val());
 
                     self.container.find('.tuning span.value').text((newTuning > 0 ? '+' : '') +newTuning);
-                    self.soundchip.instruments[self.selectedInstrument].tuning = newTuning;
+                    self.selectedInstrument.tuning = newTuning;
                 });
 
                 self.editorsInitialization.wave = true;
             }
 
-            this.container.find('.wave-types .wave-type[data-wave="' + this.soundchip.instruments[this.selectedInstrument].oscillatorType + '"]');
-            this.container.find('.tuning input[type="range"]').val(this.soundchip.instruments[this.selectedInstrument].tuning);
-            this.container.find('.fine-tuning input[type="range"]').val(this.soundchip.instruments[this.selectedInstrument].finetuning);
+            this.container.find('.wave-types .wave-type[data-wave="' + this.selectedInstrument.oscillatorType + '"]');
+            this.container.find('.tuning input[type="range"]').val(this.selectedInstrument.tuning);
+            this.container.find('.fine-tuning input[type="range"]').val(this.selectedInstrument.finetuning);
 
             this.drawWaveform();
         },
@@ -319,7 +324,7 @@
                     })
                     .on('mouseup', function () {
                         $(this).removeClass('selected');
-                        self.soundchip.instruments[self.selectedInstrument].volume = VOLUME_DEFAULTS[parseInt($(this).data('default'))];
+                        self.selectedInstrument.volume = VOLUME_DEFAULTS[parseInt($(this).data('default'))];
                         self.drawWaveform(CANVAS_MODES.VOLUME);
                     })
                     .on('mouseout', function () {
@@ -338,16 +343,16 @@
             if (!this.editorsInitialization.pitch) {
                 this.container.find('.glide')
                     .on('click', function () {
-                        if (self.soundchip.instruments[self.selectedInstrument].glide) {
+                        if (self.selectedInstrument.glide) {
                             $(this).removeClass('selected');
                         } else {
                             $(this).addClass('selected');
                         }
-                        self.soundchip.instruments[self.selectedInstrument].glide = !self.soundchip.instruments[self.selectedInstrument].glide;
+                        self.selectedInstrument.glide = !self.selectedInstrument.glide;
                     });
             }
 
-            if (self.soundchip.instruments[self.selectedInstrument].glide) {
+            if (self.selectedInstrument.glide) {
                 this.container.find('.glide').addClass('selected');
             } else {
                 this.container.find('.glide').removeClass('selected');
@@ -363,12 +368,12 @@
 
             $container.find('.active')
                 .on('click', function () {
-                    if (self.soundchip.instruments[self.selectedInstrument][param].active) {
+                    if (self.selectedInstrument[param].active) {
                         $(this).removeClass('selected');
                     } else {
                         $(this).addClass('selected');
                     }
-                    self.soundchip.instruments[self.selectedInstrument][param].active = !self.soundchip.instruments[self.selectedInstrument][param].active;
+                    self.selectedInstrument[param].active = !self.selectedInstrument[param].active;
 
                     self.drawWaveform(canvasDrawType);
                 });
@@ -377,7 +382,7 @@
                 var newFrequency = parseFloat($(this).val());
 
                 $container.find('.frequency span.value').text(newFrequency);
-                self.soundchip.instruments[self.selectedInstrument][param].frequency = newFrequency;
+                self.selectedInstrument[param].frequency = newFrequency;
 
                 self.drawWaveform(canvasDrawType);
             });
@@ -385,7 +390,7 @@
                 var newDepth = parseFloat($(this).val());
 
                 $container.find('.depth span.value').text(newDepth);
-                self.soundchip.instruments[self.selectedInstrument][param].depth = newDepth * (1 / RetroSound.MODULATION_DEPTH);
+                self.selectedInstrument[param].depth = newDepth * (1 / RetroSound.MODULATION_DEPTH);
 
                 self.drawWaveform(canvasDrawType);
             });
@@ -401,14 +406,14 @@
                 this.editorsInitialization.tremolo = true;
             }
 
-            if (self.soundchip.instruments[self.selectedInstrument].tremolo.active) {
+            if (self.selectedInstrument.tremolo.active) {
                 this.container.find('.panel[data-panel="tremolo"] .active').addClass('selected');
             } else {
                 this.container.find('.panel[data-panel="tremolo"] .active').removeClass('selected');
             }
 
-            this.container.find('.panel[data-panel="tremolo"] .frequency input[type=range]').val(this.soundchip.instruments[this.selectedInstrument].tremolo.frequency).trigger('input');
-            this.container.find('.panel[data-panel="tremolo"] .depth input[type=range]').val(this.soundchip.instruments[this.selectedInstrument].tremolo.depth * RetroSound.MODULATION_DEPTH).trigger('input');
+            this.container.find('.panel[data-panel="tremolo"] .frequency input[type=range]').val(this.selectedInstrument.tremolo.frequency).trigger('input');
+            this.container.find('.panel[data-panel="tremolo"] .depth input[type=range]').val(this.selectedInstrument.tremolo.depth * RetroSound.MODULATION_DEPTH).trigger('input');
 
             this.drawWaveform(CANVAS_MODES.TREMOLO);
         },
@@ -422,14 +427,65 @@
                 this.editorsInitialization.vibrato = true;
             }
 
-            if (self.soundchip.instruments[self.selectedInstrument].vibrato.active) {
+            if (self.selectedInstrument.vibrato.active) {
                 this.container.find('.panel[data-panel="vibrato"] .active').addClass('selected');
             } else {
                 this.container.find('.panel[data-panel="vibrato"] .active').removeClass('selected');
             }
 
-            this.container.find('.panel[data-panel="vibrato"] .frequency input[type=range]').val(this.soundchip.instruments[this.selectedInstrument].vibrato.frequency).trigger('input');
-            this.container.find('.panel[data-panel="vibrato"] .depth input[type=range]').val(this.soundchip.instruments[this.selectedInstrument].vibrato.depth * RetroSound.MODULATION_DEPTH).trigger('input');
+            this.container.find('.panel[data-panel="vibrato"] .frequency input[type=range]').val(this.selectedInstrument.vibrato.frequency).trigger('input');
+            this.container.find('.panel[data-panel="vibrato"] .depth input[type=range]').val(this.selectedInstrument.vibrato.depth * RetroSound.MODULATION_DEPTH).trigger('input');
+
+            this.drawWaveform(CANVAS_MODES.VIBRATO);
+        },
+
+        activateArpeggioEditor: function () {
+            var self = this;
+
+            if (!this.editorsInitialization.arpeggio)  {
+                this.container.find('.panel[data-panel="arpeggio"] .active').on('click', function () {
+                    if (self.selectedInstrument.arpeggio.active) {
+                        $(this).removeClass('selected');
+                    } else {
+                        $(this).addClass('selected');
+                    }
+                    self.selectedInstrument.arpeggio.active = !self.selectedInstrument.arpeggio.active;
+
+                    self.drawWaveform(CANVAS_MODES.ARPEGGIO);
+                });
+
+                this.container.find('.panel[data-panel="arpeggio"] .notes input[type=range]').on('input', function () {
+                    var newNotes = parseInt($(this).val());
+
+                    self.container.find('.panel[data-panel="arpeggio"] .notes span.value').text(newNotes);
+
+                    if (newNotes < self.selectedInstrument.arpeggio.notes.length) {
+                        self.selectedInstrument.arpeggio.notes = _.take(self.selectedInstrument.arpeggio.notes, newNotes);
+                    } else {
+                        self.selectedInstrument.arpeggio.notes = self.selectedInstrument.arpeggio.notes.concat(_.times(newNotes - self.selectedInstrument.arpeggio.notes.length, function () {
+                            return 0;
+                        }));
+                    }
+                });
+
+                this.container.find('.panel[data-panel="arpeggio"] .speed input[type=range]').on('input', function () {
+                    var newSpeed = parseInt($(this).val());
+
+                    self.container.find('.panel[data-panel="arpeggio"] .speed span.value').text(newSpeed);
+                    self.selectedInstrument.arpeggio.speed = newSpeed;
+                });
+
+                this.editorsInitialization.arpeggio = true;
+            }
+
+            if (self.selectedInstrument.vibrato.active) {
+                this.container.find('.panel[data-panel="vibrato"] .active').addClass('selected');
+            } else {
+                this.container.find('.panel[data-panel="vibrato"] .active').removeClass('selected');
+            }
+
+            this.container.find('.panel[data-panel="vibrato"] .frequency input[type=range]').val(this.selectedInstrument.vibrato.frequency).trigger('input');
+            this.container.find('.panel[data-panel="vibrato"] .depth input[type=range]').val(this.selectedInstrument.vibrato.depth * RetroSound.MODULATION_DEPTH).trigger('input');
 
             this.drawWaveform(CANVAS_MODES.VIBRATO);
         },
@@ -440,7 +496,7 @@
             if (this.playingSound) return;
 
             this.soundchip.playNote({
-                instrumentId: this.selectedInstrument,
+                instrumentId: this.selectedInstrumentId,
                 note: TEST_NOTE,
                 time: this.testNoteLength,
                 bpm:  TEST_NOTE_BPM,

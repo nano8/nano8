@@ -97,8 +97,8 @@
                 },
                 arpeggio: {
                     active:    false,
-                    notes:     [3, 5, -24, -12],
-                    speed:     0.0625 / 2
+                    notes:     [0, 0, 0, 0],
+                    speed:     3
                 }
             };
         },
@@ -184,19 +184,17 @@
             }
 
             if (instrument.arpeggio.active) {
-                var arpeggioNoteTime = ((1000 / (bpm / 60)) * instrument.arpeggio.speed) / 1000;
-                var arpeggioSteps = timeInSeconds / arpeggioNoteTime;
-                var arpeggioNotes = _.flatten(_.times(Math.ceil(arpeggioSteps / instrument.arpeggio.notes.length), function () { return instrument.arpeggio.notes; }));
+                var arpeggioNoteTime = ((1000 / (bpm / 60)) * (1 / (Math.pow(2, instrument.arpeggio.speed)))) / 1000;
+                var arpeggioSteps    = timeInSeconds / arpeggioNoteTime;
+                var arpeggioNotes    = _.flatten(_.times(Math.ceil(arpeggioSteps / instrument.arpeggio.notes.length), function () { return instrument.arpeggio.notes; }));
 
                 _.each(arpeggioNotes, function (n, i) {
                     var arpeggioNoteFrequency = NOTES[ORDERED_NOTES[currentNoteIndex + instrument.tuning + n][0]] + instrument.finetuning;
 
                     if (!instrument.glide) {
-                        console.log('NOT GLIDE');
                         oscillator.frequency.setValueAtTime(arpeggioNoteFrequency, startTime + (arpeggioNoteTime * i));
                     }
                     else {
-                        console.log('GLIDE');
                         oscillator.frequency.linearRampToValueAtTime(arpeggioNoteFrequency, startTime + (arpeggioNoteTime * i));
                     }
                 });

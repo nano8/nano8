@@ -1,6 +1,6 @@
-//////////////
+/////////////////
 // RETROSCREEN //
-//////////////
+/////////////////
 
 (function () {
     var DEFAULT_SCALE_FACTOR = 4;
@@ -47,36 +47,36 @@
         // remap mouse events
         this.onmousemove = function () {};
         this.retroDisplay.canvas.onmousemove = function (e) {
-            e.retroLayerX = e.layerX / this.scaleFactor;
-            e.retroLayerY = e.layerY / this.scaleFactor;
+            e.retroLayerX = e.layerX / self.scaleFactor;
+            e.retroLayerY = e.layerY / self.scaleFactor;
             self.onmousemove(e);
         };
 
         this.onmousedown = function () {};
         this.retroDisplay.canvas.onmousedown = function (e) {
-            e.retroLayerX = e.layerX / this.scaleFactor;
-            e.retroLayerY = e.layerY / this.scaleFactor;
+            e.retroLayerX = e.layerX / self.scaleFactor;
+            e.retroLayerY = e.layerY / self.scaleFactor;
             self.onmousedown(e);
         };
 
         this.onmouseup = function () {};
         this.retroDisplay.canvas.onmouseup = function (e) {
-            e.retroLayerX = e.layerX / this.scaleFactor;
-            e.retroLayerY = e.layerY / this.scaleFactor;
+            e.retroLayerX = e.layerX / self.scaleFactor;
+            e.retroLayerY = e.layerY / self.scaleFactor;
             self.onmouseup(e);
         };
 
         this.onmouseout = function () {};
         this.retroDisplay.canvas.onmouseout = function (e) {
-            e.retroLayerX = e.layerX / this.scaleFactor;
-            e.retroLayerY = e.layerY / this.scaleFactor;
+            e.retroLayerX = e.layerX / self.scaleFactor;
+            e.retroLayerY = e.layerY / self.scaleFactor;
             self.onmouseout(e);
         };
 
         this.onmouseover = function () {};
         this.retroDisplay.canvas.onmouseover = function (e) {
-            e.retroLayerX = e.layerX / this.scaleFactor;
-            e.retroLayerY = e.layerY / this.scaleFactor;
+            e.retroLayerX = e.layerX / self.scaleFactor;
+            e.retroLayerY = e.layerY / self.scaleFactor;
             self.onmouseover(e);
         };
 

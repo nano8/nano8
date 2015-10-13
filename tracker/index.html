@@ -43,8 +43,8 @@
                         <div class="switch" data-panel="volume">VOL</div>
                         <div class="switch" data-panel="pitch">PTC</div>
                         <div class="switch" data-panel="tremolo">TRE</div>
-                        <div class="switch selected" data-panel="vibrato">VIB</div>
-                        <div class="switch" data-panel="arpeggio">ARP</div>
+                        <div class="switch" data-panel="vibrato">VIB</div>
+                        <div class="switch selected" data-panel="arpeggio">ARP</div>
                         <div class="switch" data-panel="filter">FLT</div>
                         <div class="switch" data-panel="effects">SFX</div>
                     </div>
@@ -104,7 +104,18 @@
                                 <input type="range" name="depth" min="0" max="64">
                             </div>
                         </div>
-                        <div class="panel" data-panel="arpeggio"></div>
+                        <div class="panel" data-panel="arpeggio">
+                            <div class="label">Active</div>
+                            <div class="active"></div>
+                            <div class="notes">
+                                <div class="label">Notes <span class="value">4</span></div>
+                                <input type="range" name="notes" min="2" max="16">
+                            </div>
+                            <div class="speed">
+                                <div class="label">Speed <span class="value">3</span></div>
+                                <input type="range" name="notes" min="1" max="5">
+                            </div>
+                        </div>
                         <div class="panel" data-panel="filter"></div>
                         <div class="panel" data-panel="effects"></div>
                     </div>
