@@ -41,6 +41,8 @@
         RED:        8
     };
 
+    var DEFAULT_FONT_WIDTH = 4;
+
     this.EditorTracker = function ($container, data) {
         var self = this;
 
@@ -132,7 +134,7 @@
         collectData: function () {},
         dispose: function () {},
 
-        drawWaveform: function (mode) {
+        drawWaveform: function (mode, extraDrawFn) {
             mode = mode === undefined ? CANVAS_MODES.DEFAULT : mode;
 
             var self = this;
@@ -231,6 +233,25 @@
                         drawModulationSine(self.selectedInstrument.vibrato.depth, self.selectedInstrument.vibrato.frequency, RetroSound.VIBRATO_MAX_FREQUENCY);
                     }
                     break;
+                case CANVAS_MODES.ARPEGGIO:
+                    if (self.selectedInstrument.arpeggio.active) {
+                        var stepX = self.waveformEditor.width / self.selectedInstrument.arpeggio.notes.length;
+                        var stepY = self.waveformEditor.height / RetroSound.MODULATION_DEPTH;
+
+                        _.each(self.selectedInstrument.arpeggio.notes, function (n, i) {
+                            var x0 = i * stepX;
+                            var x1 = (i * stepX) + stepX;
+                            var y  = ((n * -1) + (RetroSound.MODULATION_DEPTH / 2)) * stepY;
+
+                            self.waveformEditor.line(x0, y, x1, y, PICO_COLORS.RED);
+                            self.waveformEditor.line(x0, y + 1, x1, y + 1, PICO_COLORS.RED);
+                        });
+                    }
+                    break;
+            }
+
+            if (extraDrawFn !== undefined) {
+                extraDrawFn(self.waveformEditor);
             }
 
             this.waveformEditor.draw();
@@ -443,6 +464,7 @@
             var self = this;
 
             if (!this.editorsInitialization.arpeggio)  {
+                // activate controls
                 this.container.find('.panel[data-panel="arpeggio"] .active').on('click', function () {
                     if (self.selectedInstrument.arpeggio.active) {
                         $(this).removeClass('selected');
@@ -466,6 +488,8 @@
                             return 0;
                         }));
                     }
+
+                    self.drawWaveform(CANVAS_MODES.ARPEGGIO);
                 });
 
                 this.container.find('.panel[data-panel="arpeggio"] .speed input[type=range]').on('input', function () {
@@ -476,8 +500,49 @@
                 });
 
                 this.editorsInitialization.arpeggio = true;
+
+                self.drawWaveform(CANVAS_MODES.ARPEGGIO);
             }
 
+            // activate canvas events
+            function setNote(e) {
+                var stepLength = (self.waveformEditor.width / self.selectedInstrument.arpeggio.notes.length)
+                var stepNumber = Math.floor(e.retroLayerX / stepLength);
+                var note       = Math.floor((e.retroLayerY / (self.waveformEditor.height / RetroSound.MODULATION_DEPTH)) - (RetroSound.MODULATION_DEPTH / 2)) * -1;
+
+                self.selectedInstrument.arpeggio.notes[stepNumber] = note;
+
+                self.drawWaveform(CANVAS_MODES.ARPEGGIO, function (canvas) {
+                    var numberToDraw = (note > 0 ? '+ ' : '') + note;
+
+                    canvas.print(numberToDraw,
+                        ((stepNumber * stepLength) + stepLength / 2) - ((DEFAULT_FONT_WIDTH * numberToDraw.length) / 2),
+                        e.retroLayerY + (e.retroLayerY - 7 < 0 ? 5 : -7));
+                });
+            }
+
+            this.waveformEditor.onmousedown = function (e) {
+                self.isDrawing = true;
+                setNote(e);
+            };
+
+            this.waveformEditor.onmouseup = function (e) {
+                self.isDrawing = false;
+                self.drawWaveform(CANVAS_MODES.ARPEGGIO);
+            };
+
+            this.waveformEditor.onmouseout = function (e) {
+                self.isDrawing = false;
+                self.drawWaveform(CANVAS_MODES.ARPEGGIO);
+            };
+
+            this.waveformEditor.onmousemove = function (e) {
+                if (!self.isDrawing) return;
+
+                setNote(e);
+            };
+
+            // initialize values
             if (self.selectedInstrument.arpeggio.active) {
                 this.container.find('.panel[data-panel="arpeggio"] .active').addClass('selected');
             } else {
@@ -487,7 +552,7 @@
             this.container.find('.panel[data-panel="arpeggio"] .notes input[type=range]').val(this.selectedInstrument.arpeggio.notes.length).trigger('input');
             this.container.find('.panel[data-panel="arpeggio"] .speed input[type=range]').val(this.selectedInstrument.arpeggio.speed).trigger('input');
 
-            this.drawWaveform(CANVAS_MODES.VIBRATO);
+            this.drawWaveform(CANVAS_MODES.ARPEGGIO);
         },
 
         playSound: function () {

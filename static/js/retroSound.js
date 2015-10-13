@@ -96,8 +96,8 @@
                     frequency: VIBRATO_MAX_FREQUENCY / 2
                 },
                 arpeggio: {
-                    active:    false,
-                    notes:     [0, 0, 0, 0],
+                    active:    true,
+                    notes:     [0, -12, 12, 6],
                     speed:     3
                 }
             };
@@ -184,7 +184,7 @@
             }
 
             if (instrument.arpeggio.active) {
-                var arpeggioNoteTime = ((1000 / (bpm / 60)) * (1 / (Math.pow(2, instrument.arpeggio.speed)))) / 1000;
+                var arpeggioNoteTime = ((1000 / (bpm / 60)) * (1 / Math.pow(2, instrument.arpeggio.speed))) / 1000;
                 var arpeggioSteps    = timeInSeconds / arpeggioNoteTime;
                 var arpeggioNotes    = _.flatten(_.times(Math.ceil(arpeggioSteps / instrument.arpeggio.notes.length), function () { return instrument.arpeggio.notes; }));
 
