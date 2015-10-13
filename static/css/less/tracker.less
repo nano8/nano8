@@ -202,7 +202,7 @@ body, html {
 
                         .label {
                             color: @pico-color-brown;
-                            margin-bottom: 16px;
+                            margin-bottom: 0px;
                         }
 
                         &.selected {
@@ -216,6 +216,10 @@ body, html {
 
                                 .label {
                                     margin-top: 16px;
+
+                                    &.spaced {
+                                        margin-bottom: 16px;
+                                    }
                                 }
 
                                 .wave-type {
@@ -362,6 +366,30 @@ body, html {
                                 left:     370px;
                                 width:    208px;
                                 top:      0px;
+                            }
+                        }
+                        &[data-panel="filter"] {
+                            .active {
+                                .image-ui-checkbutton
+                            }
+
+                            .frequency {
+                                position: absolute;
+                                left:     210px;
+                                width:    180px;
+                                top:      0px;
+                            }
+                            .q {
+                                position: absolute;
+                                left:     400px;
+                                width:    180px;
+                                top:      0px;
+                            }
+                            .depth {
+                                position: absolute;
+                                left:     400px;
+                                width:    180px;
+                                top:      48px;
                             }
                         }
                     }

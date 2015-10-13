@@ -142,7 +142,7 @@ html {
 }
 .editor .editor-tracker .page.sampler .tabs .panels .panel .label {
   color: #9b3e26;
-  margin-bottom: 16px;
+  margin-bottom: 0px;
 }
 .editor .editor-tracker .page.sampler .tabs .panels .panel.selected {
   display: block;
@@ -153,6 +153,9 @@ html {
 }
 .editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="wave"] .wave-types .label {
   margin-top: 16px;
+}
+.editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="wave"] .wave-types .label.spaced {
+  margin-bottom: 16px;
 }
 .editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="wave"] .wave-types .wave-type {
   width: 44px;
@@ -312,6 +315,34 @@ html {
   left: 370px;
   width: 208px;
   top: 0px;
+}
+.editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="filter"] .active {
+  width: 32px;
+  height: 32px;
+  background-image: url(../img/editor-ui.png);
+  background-position: 0 -156px;
+  cursor: pointer;
+}
+.editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="filter"] .active.selected {
+  background-position: -32px -156px;
+}
+.editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="filter"] .frequency {
+  position: absolute;
+  left: 210px;
+  width: 180px;
+  top: 0px;
+}
+.editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="filter"] .q {
+  position: absolute;
+  left: 400px;
+  width: 180px;
+  top: 0px;
+}
+.editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="filter"] .depth {
+  position: absolute;
+  left: 400px;
+  width: 180px;
+  top: 48px;
 }
 .editor .editor-tracker .page.sampler .tabs .tabs-switch {
   height: 28px;

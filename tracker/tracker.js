@@ -14,7 +14,8 @@
         PITCH:    2,
         TREMOLO:  3,
         VIBRATO:  4,
-        ARPEGGIO: 5
+        ARPEGGIO: 5,
+        FILTER:   6
     };
 
     var TEST_NOTE          = 'C4';
@@ -60,7 +61,8 @@
             pitch:    false,
             tremolo:  false,
             vibrato:  false,
-            arpeggio: false
+            arpeggio: false,
+            filter:   false
         };
         this.isDrawing = false;
 
@@ -109,6 +111,9 @@
                     break;
                 case 'arpeggio':
                     self.activateArpeggioEditor();
+                    break;
+                case 'filter':
+                    self.activateFilterEditor();
                     break;
             }
         });
@@ -267,6 +272,21 @@
             this.waveformEditor.onmousemove = function (e) {};
         },
 
+        activateToggleButton: function ($el, obj, param, canvasDrawType) {
+            var self = this;
+
+            $el.on('click', function () {
+                if (obj[param]) {
+                    $(this).removeClass('selected');
+                } else {
+                    $(this).addClass('selected');
+                }
+                obj[param] = !obj[param];
+
+                if (canvasDrawType !== undefined) self.drawWaveform(canvasDrawType);
+            });
+        },
+
         activateBarEditor: function (target, canvasDrawType, steps, depth) {
             var self = this;
 
@@ -362,15 +382,7 @@
             var self = this;
 
             if (!this.editorsInitialization.pitch) {
-                this.container.find('.glide')
-                    .on('click', function () {
-                        if (self.selectedInstrument.glide) {
-                            $(this).removeClass('selected');
-                        } else {
-                            $(this).addClass('selected');
-                        }
-                        self.selectedInstrument.glide = !self.selectedInstrument.glide;
-                    });
+                this.activateToggleButton(this.container.find('.glide'), self.selectedInstrument, 'glide');
             }
 
             if (self.selectedInstrument.glide) {
@@ -387,17 +399,7 @@
         activateFreqDepthEditor: function ($container, param, canvasDrawType) {
             var self = this;
 
-            $container.find('.active')
-                .on('click', function () {
-                    if (self.selectedInstrument[param].active) {
-                        $(this).removeClass('selected');
-                    } else {
-                        $(this).addClass('selected');
-                    }
-                    self.selectedInstrument[param].active = !self.selectedInstrument[param].active;
-
-                    self.drawWaveform(canvasDrawType);
-                });
+            this.activateToggleButton($container.find('.active'), self.selectedInstrument[param], 'active', canvasDrawType);
 
             $container.find('.frequency input[type=range]').on('input', function () {
                 var newFrequency = parseFloat($(this).val());
@@ -465,16 +467,7 @@
 
             if (!this.editorsInitialization.arpeggio)  {
                 // activate controls
-                this.container.find('.panel[data-panel="arpeggio"] .active').on('click', function () {
-                    if (self.selectedInstrument.arpeggio.active) {
-                        $(this).removeClass('selected');
-                    } else {
-                        $(this).addClass('selected');
-                    }
-                    self.selectedInstrument.arpeggio.active = !self.selectedInstrument.arpeggio.active;
-
-                    self.drawWaveform(CANVAS_MODES.ARPEGGIO);
-                });
+                this.activateToggleButton(this.container.find('.panel[data-panel="arpeggio"] .active'), self.selectedInstrument.arpeggio, 'active', CANVAS_MODES.ARPEGGIO);
 
                 this.container.find('.panel[data-panel="arpeggio"] .notes input[type=range]').on('input', function () {
                     var newNotes = parseInt($(this).val());
@@ -553,6 +546,39 @@
             this.container.find('.panel[data-panel="arpeggio"] .speed input[type=range]').val(this.selectedInstrument.arpeggio.speed).trigger('input');
 
             this.drawWaveform(CANVAS_MODES.ARPEGGIO);
+        },
+
+        activateFilterEditor: function () {
+            var self = this;
+
+            if (!this.editorsInitialization.filter)  {
+                this.editorsInitialization.filter = true;
+
+                this.activateToggleButton(this.container.find('.panel[data-panel="filter"] .active'), self.selectedInstrument.filter, 'active', CANVAS_MODES.FILTER);
+
+                this.container.find('.panel[data-panel="filter"] .frequency input[type=range]').on('input', function () {
+                    var newFrequency = parseInt($(this).val());
+
+                    self.container.find('.panel[data-panel="filter"] .frequency span.value').text(newFrequency);
+                    self.selectedInstrument.filter.baseFrequency = newFrequency;
+                });
+
+                this.container.find('.panel[data-panel="filter"] .q input[type=range]').on('input', function () {
+                    var newQ = parseInt($(this).val());
+
+                    self.container.find('.panel[data-panel="filter"] .q span.value').text(newQ);
+                    self.selectedInstrument.filter.q = newQ;
+                });
+
+                this.container.find('.panel[data-panel="filter"] .depth input[type=range]').on('input', function () {
+                    var newDepth = parseInt($(this).val());
+
+                    self.container.find('.panel[data-panel="filter"] .depth span.value').text(newDepth);
+                    self.selectedInstrument.filter.q = newDepth;
+                });
+            }
+
+            this.drawWaveform(CANVAS_MODES.FILTER);
         },
 
         playSound: function () {

@@ -21,6 +21,20 @@
 
     var PITCH_SHIFT_ADJUSTMENT = 200;
 
+    var OSC_TYPES = {
+        SINE:     'sine',
+        SQUARE:   'square',
+        SAWTOOTH: 'sawtooth',
+        TRIANGLE: 'triangle',
+        NOISE:    'noise'
+    };
+
+    var FILTER_TYPES = {
+        LOWPASS:  'lowpass',
+        HIGHPASS: 'highpass',
+        BANDPASS: 'bandpass'
+    };
+
     // normalize AudioContext across browsers
     window.AudioContext = window.AudioContext||window.webkitAudioContext;
 
@@ -60,11 +74,21 @@
             vibratoOsc.frequency.value = instrument.vibrato.frequency;
             vibratoOsc.start();
 
+            var filter             = this.context.createBiquadFilter();
+            filter.type            = instrument.filter.type;
+            filter.frequency.value = instrument.filter.baseFrequency;
+            filter.Q.value         = instrument.filter.q;
+            filter.gain.value      = instrument.filter.depth;
+            filter.connect(amp);
+
+            console.log(instrument.filter);
+
             instrument.amp         = amp;
             instrument.tremoloOsc  = tremoloOsc;
             instrument.tremoloGain = tremoloGain;
             instrument.vibratoOsc  = vibratoOsc;
             instrument.vibratoGain = vibratoGain;
+            instrument.filterNode  = filter;
             instrument.playingNote = null;
 
             this.instruments.push(instrument);
@@ -82,8 +106,8 @@
                 tuning:         0,
                 finetuning:     0,
                 finetuning:     0,
-                volume:         _.map(_.range(MODULATIONS_STEPS), function () { return 0.5; }),
-                pitch:          _.map(_.range(MODULATIONS_STEPS), function () { return 0.5; }),
+                volume:         _.times(MODULATIONS_STEPS, function () { return (MODULATION_DEPTH / 2) * (1 / MODULATION_DEPTH); }),
+                pitch:          _.times(MODULATIONS_STEPS, function () { return (MODULATION_DEPTH / 2) * (1 / MODULATION_DEPTH); }),
                 glide:         false,
                 tremolo: {
                     active:    false,
@@ -96,9 +120,17 @@
                     frequency: VIBRATO_MAX_FREQUENCY / 2
                 },
                 arpeggio: {
-                    active:    true,
-                    notes:     [0, -12, 12, 6],
+                    active:    false,
+                    notes:     [0, 0, 0, 0],
                     speed:     3
+                },
+                filter: {
+                    active:        true,
+                    type:          FILTER_TYPES.LOWPASS,
+                    baseFrequency: 100,
+                    frequencies:   _.times(MODULATIONS_STEPS, function () { return (MODULATION_DEPTH / 2) * (1 / MODULATION_DEPTH); }),
+                    q:             100,
+                    depth:         10000
                 }
             };
         },
@@ -138,7 +170,7 @@
                 oscillator                 = this.context.createOscillator();
                 oscillator.type            = instrument.oscillatorType;
                 oscillator.frequency.value = noteFrequency;
-                oscillator.connect(this.instruments[instrumentId].amp);
+                oscillator.connect(instrument.filter.active ? instrument.filterNode : instrument.amp);
             } else {
                 var bufferSize  = 2 * this.context.sampleRate;
                 var noiseBuffer = this.context.createBuffer(1, bufferSize, this.context.sampleRate);
@@ -159,6 +191,12 @@
                 oscillator.frequency.value = noteFrequency;
                 biquadFilter.Q.value       = NOISE_BASE_Q;
             }
+
+            // setup the filter
+            instrument.filterNode.type            = instrument.filter.type;
+            instrument.filterNode.frequency.setValueAtTime(instrument.filter.baseFrequency, startTime);
+            instrument.filterNode.Q.setValueAtTime(instrument.filter.q, startTime);
+            instrument.filterNode.gain.setValueAtTime(instrument.filter.depth, startTime);
 
             oscillator.start(startTime);
 
@@ -245,13 +283,8 @@
 
     };
 
-    RetroSound.OSC_TYPES = {
-        SINE:     'sine',
-        SQUARE:   'square',
-        SAWTOOTH: 'sawtooth',
-        TRIANGLE: 'triangle',
-        NOISE:    'noise'
-    };
+    RetroSound.OSC_TYPES             = OSC_TYPES;
+    RetroSound.FILTER_TYPES           = FILTER_TYPES;
     RetroSound.ORDERED_NOTES         = ORDERED_NOTES;
     RetroSound.NOTES                 = NOTES;
     RetroSound.MODULATIONS_STEPS     = MODULATIONS_STEPS;

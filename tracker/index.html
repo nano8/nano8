@@ -44,14 +44,14 @@
                         <div class="switch" data-panel="pitch">PTC</div>
                         <div class="switch" data-panel="tremolo">TRE</div>
                         <div class="switch" data-panel="vibrato">VIB</div>
-                        <div class="switch selected" data-panel="arpeggio">ARP</div>
-                        <div class="switch" data-panel="filter">FLT</div>
+                        <div class="switch" data-panel="arpeggio">ARP</div>
+                        <div class="switch selected" data-panel="filter">FLT</div>
                         <div class="switch" data-panel="effects">SFX</div>
                     </div>
                     <div class="panels">
                         <div class="panel" data-panel="wave">
                             <div class="wave-types">
-                                <div class="label">Wave Type</div>
+                                <div class="label spaced">Wave Type</div>
                                 <div class="wave-type sin selected" data-wave="sine"></div>
                                 <div class="wave-type square" data-wave="square"></div>
                                 <div class="wave-type sawtooth" data-wave="sawtooth"></div>
@@ -77,11 +77,11 @@
                             </div>
                         </div>
                         <div class="panel selected" data-panel="pitch">
-                            <div class="label">Glide</div>
+                            <div class="label spaced">Glide</div>
                             <div class="glide"></div>
                         </div>
                         <div class="panel" data-panel="tremolo">
-                            <div class="label">Active</div>
+                            <div class="label spaced">Active</div>
                             <div class="active"></div>
                             <div class="frequency">
                                 <div class="label">Frequency <span class="value">10</span></div>
@@ -113,10 +113,25 @@
                             </div>
                             <div class="speed">
                                 <div class="label">Speed <span class="value">3</span></div>
-                                <input type="range" name="notes" min="1" max="5">
+                                <input type="range" name="speed" min="1" max="5">
                             </div>
                         </div>
-                        <div class="panel" data-panel="filter"></div>
+                        <div class="panel" data-panel="filter">
+                            <div class="label">Active</div>
+                            <div class="active"></div>
+                            <div class="frequency">
+                                <div class="label">Freq <span class="value">500</span></div>
+                                <input type="range" name="frequency" min="-1000" max="1000" value="500">
+                            </div>
+                            <div class="q">
+                                <div class="label">Q <span class="value">500</span></div>
+                                <input type="range" name="q" min="-1000" max="1000" value="500">
+                            </div>
+                            <div class="depth">
+                                <div class="label">Depth <span class="value">500</span></div>
+                                <input type="range" name="depth" min="-1000" max="1000" value="500">
+                            </div>
+                        </div>
                         <div class="panel" data-panel="effects"></div>
                     </div>
                 </div>
