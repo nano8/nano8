@@ -478,14 +478,14 @@
                 this.editorsInitialization.arpeggio = true;
             }
 
-            if (self.selectedInstrument.vibrato.active) {
-                this.container.find('.panel[data-panel="vibrato"] .active').addClass('selected');
+            if (self.selectedInstrument.arpeggio.active) {
+                this.container.find('.panel[data-panel="arpeggio"] .active').addClass('selected');
             } else {
-                this.container.find('.panel[data-panel="vibrato"] .active').removeClass('selected');
+                this.container.find('.panel[data-panel="arpeggio"] .active').removeClass('selected');
             }
 
-            this.container.find('.panel[data-panel="vibrato"] .frequency input[type=range]').val(this.selectedInstrument.vibrato.frequency).trigger('input');
-            this.container.find('.panel[data-panel="vibrato"] .depth input[type=range]').val(this.selectedInstrument.vibrato.depth * RetroSound.MODULATION_DEPTH).trigger('input');
+            this.container.find('.panel[data-panel="arpeggio"] .notes input[type=range]').val(this.selectedInstrument.arpeggio.notes.length).trigger('input');
+            this.container.find('.panel[data-panel="arpeggio"] .speed input[type=range]').val(this.selectedInstrument.arpeggio.speed).trigger('input');
 
             this.drawWaveform(CANVAS_MODES.VIBRATO);
         },
