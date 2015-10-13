@@ -96,9 +96,9 @@
                     frequency: VIBRATO_MAX_FREQUENCY / 2
                 },
                 arpeggio: {
-                    active:    true,
-                    notes:     [3, 5, 7, -12],
-                    speed:     0.0625 / 8
+                    active:    false,
+                    notes:     [3, 5, -24, -12],
+                    speed:     0.0625 / 2
                 }
             };
         },
@@ -110,14 +110,14 @@
             var bpm          = noteData.bpm;
             var doneCallback = noteData.doneCallback;
             var arpeggio     = noteData.arpeggio;
-            var startTime    = noteData.startTime !== undefined ? noteData.startTime : this.context.currentTime;
+            var startTime    = noteData.startTime !== undefined ? noteData.startTime / 1000: this.context.currentTime;
 
             var self = this;
 
             var currentNoteIndex = _.findIndex(ORDERED_NOTES, function (n) { return n[0] === note; });
 
-            var timeInSeconds = time / 1000;
-            var instrument = this.instruments[instrumentId];
+            var timeInSeconds      = time / 1000;
+            var instrument         = this.instruments[instrumentId];
 
             if (instrument.tuning !== 0) {
                 note = ORDERED_NOTES[currentNoteIndex + instrument.tuning][0];
@@ -190,7 +190,15 @@
 
                 _.each(arpeggioNotes, function (n, i) {
                     var arpeggioNoteFrequency = NOTES[ORDERED_NOTES[currentNoteIndex + instrument.tuning + n][0]] + instrument.finetuning;
-                    oscillator.frequency.setValueAtTime(arpeggioNoteFrequency, startTime + (arpeggioNoteTime * i));
+
+                    if (!instrument.glide) {
+                        console.log('NOT GLIDE');
+                        oscillator.frequency.setValueAtTime(arpeggioNoteFrequency, startTime + (arpeggioNoteTime * i));
+                    }
+                    else {
+                        console.log('GLIDE');
+                        oscillator.frequency.linearRampToValueAtTime(arpeggioNoteFrequency, startTime + (arpeggioNoteTime * i));
+                    }
                 });
             }
 
