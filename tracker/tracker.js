@@ -34,6 +34,12 @@
         [0.5, 0.74, 0.86, 0.73, 0.57, 0.47, 0.35, 0.27, 0.2, 0.16, 0.11, 0.087, 0.071, 0.04, 0.01, 0]
     ];
 
+    var PICO_COLORS = {
+        DARK_GREY:  5,
+        LIGHT_GREY: 6,
+        RED:        8
+    };
+
     this.EditorTracker = function ($container, data) {
         var self = this;
 
@@ -41,7 +47,7 @@
         this.currentPage           = PAGES.SAMPLE_EDITOR;
         this.$pageSampler          = $container.find('.page.sampler');
         this.$waveformEditorCanvas = this.$pageSampler.find('canvas.waveform');
-        this.waveformEditor        = new RetroScreen(this.$waveformEditorCanvas);
+        this.waveformEditor        = new RetroScreen(this.$waveformEditorCanvas, Spico.PICO_DEFAULT_COLORS_VALUES);
         this.waveformEditor.clear();
 
         // interface
@@ -128,7 +134,7 @@
 
             this.waveformEditor.clear();
 
-            this.waveformEditor.line(0, this.waveformEditor.height / 2, this.waveformEditor.width, this.waveformEditor.height / 2, Spico.PICO_DEFAULT_COLORS_VALUES[6]);
+            this.waveformEditor.line(0, this.waveformEditor.height / 2, this.waveformEditor.width, this.waveformEditor.height / 2, PICO_COLORS.LIGHT_GREY);
 
             _.times(this.waveformEditor.width, function (x) {
                 var y;
@@ -154,7 +160,7 @@
                         break;
                 }
 
-                self.waveformEditor.line(lastX, lastY, x, y, Spico.PICO_DEFAULT_COLORS_VALUES[5]);
+                self.waveformEditor.line(lastX, lastY, x, y, PICO_COLORS.DARK_GREY);
 
                 lastX = x;
                 lastY = y;
@@ -169,7 +175,7 @@
                         (1 - y) * self.waveformEditor.height,
                         (x * stepX) + stepX,
                         (1 - y) * self.waveformEditor.height,
-                        Spico.PICO_DEFAULT_COLORS_VALUES[8]);
+                        PICO_COLORS.RED);
 
                     if (x === 0) return;
 
@@ -177,7 +183,7 @@
                         (1 - y) * self.waveformEditor.height,
                         x * stepX,
                         (1 - data[x-1]) * self.waveformEditor.height,
-                        Spico.PICO_DEFAULT_COLORS_VALUES[8]);
+                        PICO_COLORS.RED);
 
                 });
             }
@@ -194,7 +200,7 @@
 
                     y = (Math.sin(x / Math.max(max - frequency, 1))) * ((self.waveformEditor.height / 2) * depth) + (self.waveformEditor.height / 2);
 
-                    self.waveformEditor.line(lastX, lastY, x, y, Spico.PICO_DEFAULT_COLORS_VALUES[8]);
+                    self.waveformEditor.line(lastX, lastY, x, y, PICO_COLORS.RED);
 
                     lastX = x;
                     lastY = y;

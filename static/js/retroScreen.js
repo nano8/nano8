@@ -3,10 +3,16 @@
 //////////////
 
 (function () {
-    var SCALE_FACTOR = 4;
+    var DEFAULT_SCALE_FACTOR = 4;
 
-    function RetroScreen (canvas) {
+    function RetroScreen (canvas, palette, scaleFactor) {
+        if (scaleFactor === undefined) scaleFactor = DEFAULT_SCALE_FACTOR;
+        if (palette === undefined) throw 'RetroScreen: Palette not set';
+
         var self = this;
+
+        this.scaleFactor = scaleFactor;
+        this.palette     = palette; // 0 is considered the "black" color
 
         this.canvas = canvas instanceof jQuery ? canvas.get(0) : canvas;
         this.ctx    = this.canvas.getContext("2d");
@@ -15,7 +21,7 @@
         this.canvas.style['display'] = 'none';
 
         // setup retrodisplay
-        this.retroDisplay                               = { scale: SCALE_FACTOR, canvas: null, context: null, width: 0, height: 0 };
+        this.retroDisplay                               = { scale: this.scaleFactor, canvas: null, context: null, width: 0, height: 0 };
         this.retroDisplay.width                         = this.canvas.width * this.retroDisplay.scale;
         this.retroDisplay.height                        = this.canvas.height * this.retroDisplay.scale;
         this.retroDisplay.canvas                        = document.createElement('canvas');
@@ -34,45 +40,43 @@
         this.canvas.parentNode.insertBefore(this.retroDisplay.canvas, this.canvas.nextSibling);
 
         this.data   = _.map(_.range(this.canvas.height), function () {
-            return _.map(_.range(self.canvas.width), function () {
-                return [0, 0, 0];
-            });
+            return _.times(self.canvas.width, function () { 0; });
         });
         this.imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
 
         // remap mouse events
         this.onmousemove = function () {};
         this.retroDisplay.canvas.onmousemove = function (e) {
-            e.retroLayerX = e.layerX / SCALE_FACTOR;
-            e.retroLayerY = e.layerY / SCALE_FACTOR;
+            e.retroLayerX = e.layerX / this.scaleFactor;
+            e.retroLayerY = e.layerY / this.scaleFactor;
             self.onmousemove(e);
         };
 
         this.onmousedown = function () {};
         this.retroDisplay.canvas.onmousedown = function (e) {
-            e.retroLayerX = e.layerX / SCALE_FACTOR;
-            e.retroLayerY = e.layerY / SCALE_FACTOR;
+            e.retroLayerX = e.layerX / this.scaleFactor;
+            e.retroLayerY = e.layerY / this.scaleFactor;
             self.onmousedown(e);
         };
 
         this.onmouseup = function () {};
         this.retroDisplay.canvas.onmouseup = function (e) {
-            e.retroLayerX = e.layerX / SCALE_FACTOR;
-            e.retroLayerY = e.layerY / SCALE_FACTOR;
+            e.retroLayerX = e.layerX / this.scaleFactor;
+            e.retroLayerY = e.layerY / this.scaleFactor;
             self.onmouseup(e);
         };
 
         this.onmouseout = function () {};
         this.retroDisplay.canvas.onmouseout = function (e) {
-            e.retroLayerX = e.layerX / SCALE_FACTOR;
-            e.retroLayerY = e.layerY / SCALE_FACTOR;
+            e.retroLayerX = e.layerX / this.scaleFactor;
+            e.retroLayerY = e.layerY / this.scaleFactor;
             self.onmouseout(e);
         };
 
         this.onmouseover = function () {};
         this.retroDisplay.canvas.onmouseover = function (e) {
-            e.retroLayerX = e.layerX / SCALE_FACTOR;
-            e.retroLayerY = e.layerY / SCALE_FACTOR;
+            e.retroLayerX = e.layerX / this.scaleFactor;
+            e.retroLayerY = e.layerY / this.scaleFactor;
             self.onmouseover(e);
         };
 
@@ -83,9 +87,7 @@
             var self = this;
 
             this.data = _.map(_.range(self.canvas.height), function () {
-                return _.map(_.range(self.canvas.width), function () {
-                    return [0, 0, 0];
-                });
+                return _.times(self.canvas.width, function () { return 0; });
             });
         },
         setPixel: function (x, y, c) {
@@ -201,9 +203,9 @@
                 var x = (i / 4) % self.canvas.width;
                 var y = Math.floor((i / 4) / self.canvas.width);
 
-                self.imageData.data[i]     = self.data[y][x][0];
-                self.imageData.data[i + 1] = self.data[y][x][1];
-                self.imageData.data[i + 2] = self.data[y][x][2];
+                self.imageData.data[i]     = this.palette[self.data[y][x]][0];
+                self.imageData.data[i + 1] = this.palette[self.data[y][x]][1];
+                self.imageData.data[i + 2] = this.palette[self.data[y][x]][2];
 
             };
             this.ctx.putImageData(this.imageData, 0, 0);
