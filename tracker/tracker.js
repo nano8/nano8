@@ -437,9 +437,10 @@
                 instrumentId: this.selectedInstrument,
                 note: TEST_NOTE,
                 time: this.testNoteLength,
+                bpm:  TEST_NOTE_BPM,
                 doneCallback: function () {
                     self.playingSound = false;
-                }
+                },
             });
 
             this.playingSound = true;

@@ -97,25 +97,29 @@
                 },
                 arpeggio: {
                     active:    true,
-                    notes:     [3, 5, 7, -12]
+                    notes:     [3, 5, 7, -12],
+                    speed:     0.0625 / 8
                 }
             };
         },
 
         playNote: function (noteData) {
-
             var instrumentId = noteData.instrumentId;
             var note         = noteData.note;
             var time         = noteData.time;
+            var bpm          = noteData.bpm;
             var doneCallback = noteData.doneCallback;
+            var arpeggio     = noteData.arpeggio;
+            var startTime    = noteData.startTime !== undefined ? noteData.startTime : this.context.currentTime;
 
             var self = this;
+
+            var currentNoteIndex = _.findIndex(ORDERED_NOTES, function (n) { return n[0] === note; });
 
             var timeInSeconds = time / 1000;
             var instrument = this.instruments[instrumentId];
 
             if (instrument.tuning !== 0) {
-                var currentNoteIndex = _.findIndex(ORDERED_NOTES, function (n) { return n[0] === note; });
                 note = ORDERED_NOTES[currentNoteIndex + instrument.tuning][0];
             }
 
@@ -128,6 +132,7 @@
             }
 
             var oscillator;
+            instrument.playingNote = oscillator;
 
             if (instrument.oscillatorType !== 'noise') {
                 oscillator                 = this.context.createOscillator();
@@ -155,9 +160,8 @@
                 biquadFilter.Q.value       = NOISE_BASE_Q;
             }
 
-            oscillator.start();
+            oscillator.start(startTime);
 
-            var startTime = self.context.currentTime;
             var stopTime  = startTime + timeInSeconds;
 
             // initial volume ramp up
@@ -170,7 +174,7 @@
             instrument.tremoloGain.gain.linearRampToValueAtTime(instrument.tremolo.active ? instrument.tremolo.depth : 0, startTime + ANTI_CLICK_ADJUSTMENT);
 
             // setup vibrato
-            if (instrument.vibrato.active) {
+            if (instrument.vibrato.active && !instrument.arpeggio.active) {
                 instrument.vibratoOsc.frequency.value = instrument.vibrato.frequency;
 
                 instrument.vibratoGain.gain.setValueAtTime(0, startTime);
@@ -179,6 +183,16 @@
                 instrument.vibratoGain.connect(oscillator.frequency);
             }
 
+            if (instrument.arpeggio.active) {
+                var arpeggioNoteTime = ((1000 / (bpm / 60)) * instrument.arpeggio.speed) / 1000;
+                var arpeggioSteps = timeInSeconds / arpeggioNoteTime;
+                var arpeggioNotes = _.flatten(_.times(Math.ceil(arpeggioSteps / instrument.arpeggio.notes.length), function () { return instrument.arpeggio.notes; }));
+
+                _.each(arpeggioNotes, function (n, i) {
+                    var arpeggioNoteFrequency = NOTES[ORDERED_NOTES[currentNoteIndex + instrument.tuning + n][0]] + instrument.finetuning;
+                    oscillator.frequency.setValueAtTime(arpeggioNoteFrequency, startTime + (arpeggioNoteTime * i));
+                });
+            }
 
             // apply volume and pitch modulations
             var ticks = timeInSeconds / MODULATIONS_STEPS;
@@ -186,16 +200,19 @@
                 if (i === 0) return;
 
                 var volume          = instrument.volume[i];
-                var pitch           = instrument.pitch[i];
-                var pitchShift      = (-0.5 + pitch) * (instrument.oscillatorType === 'noise' ? NOISE_PITCH_SHIFT_ADJUSTMENT : PITCH_SHIFT_ADJUSTMENT);
-                var targetFrequency = (noteFrequency - initialPitchShift) + pitchShift
-
                 // ignore the first volume slide as it's already set
                 instrument.amp.gain.linearRampToValueAtTime(volume, startTime + (ticks * i) + ANTI_CLICK_ADJUSTMENT);
 
-                // ignore the first pitch slide as it's already set or if pitch modulation is enabled
-                if (!instrument.vibrato.active) {
-                    oscillator.frequency.linearRampToValueAtTime(targetFrequency, startTime + (ticks * i) + ANTI_CLICK_ADJUSTMENT);
+                // ignore the pitch changes if arpeggio is active
+                if (!instrument.arpeggio.active) {
+                    var pitch           = instrument.pitch[i];
+                    var pitchShift      = (-0.5 + pitch) * (instrument.oscillatorType === 'noise' ? NOISE_PITCH_SHIFT_ADJUSTMENT : PITCH_SHIFT_ADJUSTMENT);
+                    var targetFrequency = (noteFrequency - initialPitchShift) + pitchShift
+
+                    // ignore the first pitch slide as it's already set or if pitch modulation is enabled
+                    if (!instrument.vibrato.active) {
+                        oscillator.frequency.linearRampToValueAtTime(targetFrequency, startTime + (ticks * i) + ANTI_CLICK_ADJUSTMENT);
+                    }
                 }
             });
 
@@ -213,6 +230,8 @@
 
                 oscillator.stop(currentTime + (ANTI_CLICK_ADJUSTMENT * 2));
                 instrument.vibratoGain.disconnect();
+
+                instrument.playingNote = null;
 
                 if (doneCallback !== undefined) doneCallback();
             }, stopTime - ANTI_CLICK_ADJUSTMENT)
