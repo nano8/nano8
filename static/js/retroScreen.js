@@ -13,14 +13,14 @@
 
         // get a canvas element, or a jQuery canvas element or create a canvas element if a {width: x, height: y, container: element}
         // object is passed
-        if (this.jQuery !== undefined && canvas instanceof jQuery) {
+        if (window.jQuery !== undefined && canvas instanceof jQuery) {
             this.canvas = canvas.get(0);
         } else if (!_.isElement(canvas)) {
             if (canvas.width === undefined || canvas.height === undefined || canvas.container === undefined) {
                 throw 'canvas object is not valid. It must be {width: x, height: y, container: element}';
             }
 
-            canvas.container = (this.jQuery !== undefined && canvas instanceof jQuery) ? canvas.container.get(0) : canvas.container;
+            canvas.container = (window.jQuery !== undefined && canvas instanceof jQuery) ? canvas.container.get(0) : canvas.container;
             var newCanvas = document.createElement('canvas');
             newCanvas.width = canvas.width;
             newCanvas.height = canvas.height;
