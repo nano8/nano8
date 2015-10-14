@@ -11,10 +11,27 @@
 
         var self = this;
 
+        // get a canvas element, or a jQuery canvas element or create a canvas element if a {width: x, height: y, container: element}
+        // object is passed
+        if (this.jQuery !== undefined && canvas instanceof jQuery) {
+            this.canvas = canvas.get(0);
+        } else if (!_.isElement(canvas)) {
+            if (canvas.width === undefined || canvas.height === undefined || canvas.container === undefined) {
+                throw 'canvas object is not valid. It must be {width: x, height: y, container: element}';
+            }
+
+            canvas.container = (this.jQuery !== undefined && canvas instanceof jQuery) ? canvas.container.get(0) : canvas.container;
+            var newCanvas = document.createElement('canvas');
+            newCanvas.width = canvas.width;
+            newCanvas.height = canvas.height;
+            canvas.container.appendChild(newCanvas);
+            this.canvas = newCanvas;
+        } else {
+            this.canvas = canvas;
+        }
+
         this.scaleFactor = scaleFactor;
         this.palette     = palette; // 0 is considered the "black" color
-
-        this.canvas = canvas instanceof jQuery ? canvas.get(0) : canvas;
         this.ctx    = this.canvas.getContext("2d");
         this.ctx.imageSmoothingEnabled = false;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height, '#ffffff');
@@ -80,6 +97,7 @@
             self.onmouseover(e);
         };
 
+        this.clear();
     }
 
     RetroScreen.prototype =  {
@@ -91,9 +109,14 @@
             });
         },
         setPixel: function (x, y, c) {
-            try {
-                this.data[Math.round(y)][Math.round(x)] = c;
-            } catch (err) {}
+            if (this.data[y] === undefined) return;
+
+            this.data[Math.round(y)][Math.round(x)] = c;
+        },
+        getPixel: function (x, y) {
+            if (this.data[y] === undefined || this.data[y][x] === undefined) return 0;
+
+            return this.data[Math.round(y)][Math.round(x)];
         },
         line: function (x0, y0, x1, y1, c) {
             // bresenham midpoint circle algorithm to draw a pixel-perfect line
@@ -133,7 +156,7 @@
             this.line(x1, y1, x0, y1, c);
             this.line(x0, y1, x0, y0, c);
         },
-        fillRect: function (x, y, w, h, c) {
+        rectFill: function (x, y, w, h, c) {
             var self = this;
 
             // normalize input
@@ -142,8 +165,8 @@
             var y0 = Math.min(y, y + h);
             var y1 = Math.max(y, y + h);
 
-            _.each(_.range(y0, y1), function (yy) {
-                _.each(_.range(x0, x1), function (xx) {
+            _.each(_.range(y0, y1 + 1), function (yy) {
+                _.each(_.range(x0, x1 + 1), function (xx) {
                     self.setPixel(xx, yy, c);
                 });
             });
@@ -208,6 +231,7 @@
                 self.imageData.data[i + 2] = this.palette[self.data[y][x]][2];
 
             };
+
             this.ctx.putImageData(this.imageData, 0, 0);
 
             this.retroDisplay.context.drawImage(this.canvas, 0, 0, this.canvas.width, this.canvas.height, 0, 0, this.retroDisplay.width, this.retroDisplay.height);

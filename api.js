@@ -34,11 +34,13 @@ function _init() {
     circfill(35, 15, 5, 10);
     circ(45, 15, 5, 11);
     line(52, 10, 58, 20, 12);
+
     pset(60, 10, 13);
     pset(62, 10, pget(60, 10)+1);
     clip(72, 10, 8, 10);
     rectfill(0, 0, 127, 127, 6);
     clip();
+
 
     // sprites
     rectfill(60, 24, 85, 33, 15);
@@ -58,6 +60,7 @@ function _init() {
     // only cels with flag 2 set
     map(0, 3, 50, 35, 4, 3, 2);
 
+
     // set cursor position and color
     cursor(0, 90);
     color(7);
@@ -67,6 +70,7 @@ function _init() {
     x = cosp8(0.125) + mid(1, 2, 3);
     x = (x%1) + abs(-1);
     print("x: " + x);
+
 
     // collections and strings
     // HANDLED BY JAVASCRIPT
@@ -96,6 +100,7 @@ function _init() {
     // and calls _update() and
     // _draw() once per frame if
     // they exist
+
 }
 
 function _update() {
@@ -103,7 +108,6 @@ function _update() {
 }
 
 function _draw() {
-
     // show current value of t
     rectfill(0, 90, 30, 96, 5);
     print("t: " + t, 1, 91 , 7);
@@ -121,6 +125,7 @@ function _draw() {
 
         });
     });
+
 }
 
 // __gfx__

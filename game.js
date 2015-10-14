@@ -8,9 +8,13 @@ function _init() {
 }
 
 function _update() {
-    cls()
-    // spr(1, 0, 0);
-    line(10, 10, 40, 50, 5);
+    cls();
+    pal();
+    pset(10, 10, 8);
+    pal(8, 3);
+    pset(11, 11, 8);
+    pset(12, 12, 9);
+    pal(9, 3, 1);
 }
 
 function _draw() {
