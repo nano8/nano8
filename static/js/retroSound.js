@@ -37,6 +37,9 @@
     var FILTER_MAX_FREQUENCY         = 5000;
     var FILTER_MODULATION_ADJUSTMENT = 1000;
 
+    var REVERB_LENGTH = 8;
+    var REVERB_DECAY = 2;
+
     // normalize AudioContext across browsers
     window.AudioContext = window.AudioContext||window.webkitAudioContext;
 
@@ -83,12 +86,24 @@
             filter.gain.value      = instrument.filter.depth;
             filter.connect(amp);
 
+            var reverb = this.context.createConvolver();
+            var reverbBuffer = this.context.createBuffer(2, this.context.sampleRate * REVERB_LENGTH, this.context.sampleRate);
+
+            for (var i = 0; i < this.context.sampleRate; i++) {
+                reverbBuffer.getChannelData(0)[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / this.context.sampleRate, REVERB_DECAY);
+                reverbBuffer.getChannelData(1)[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / this.context.sampleRate, REVERB_DECAY);
+            }
+
+            reverb.buffer = reverbBuffer;
+            reverb.connect(this.output);
+
             instrument.amp         = amp;
             instrument.tremoloOsc  = tremoloOsc;
             instrument.tremoloGain = tremoloGain;
             instrument.vibratoOsc  = vibratoOsc;
             instrument.vibratoGain = vibratoGain;
             instrument.filterNode  = filter;
+            instrument.reverb      = reverb;
             instrument.playingNote = null;
 
             this.instruments.push(instrument);
@@ -131,6 +146,9 @@
                     frequencies:   _.times(MODULATIONS_STEPS, function () { return (MODULATION_DEPTH / 2) * (1 / MODULATION_DEPTH); }),
                     q:             100,
                     depth:         500
+                },
+                effects: {
+                    reverb: true
                 }
             };
         },
@@ -170,6 +188,7 @@
                 oscillator                 = this.context.createOscillator();
                 oscillator.type            = instrument.oscillatorType;
                 oscillator.frequency.value = noteFrequency;
+
                 oscillator.connect(instrument.filter.active ? instrument.filterNode : instrument.amp);
             } else {
                 var bufferSize  = 2 * this.context.sampleRate;
@@ -190,6 +209,15 @@
 
                 oscillator.frequency.value = noteFrequency;
                 biquadFilter.Q.value       = NOISE_BASE_Q;
+            }
+
+            // setup reverb
+            if (instrument.effects.reverb) {
+                instrument.amp.disconnect();
+                instrument.amp.connect(instrument.reverb);
+            } else {
+                instrument.amp.disconnect();
+                instrument.amp.connect(this.output);
             }
 
             // setup the filter
@@ -283,9 +311,6 @@
 
                 if (doneCallback !== undefined) doneCallback();
             }, stopTime - ANTI_CLICK_ADJUSTMENT);
-
-            console.log('startTime', startTime);
-            console.log('stopTime', stopTime);
         }
 
     };

@@ -15,7 +15,8 @@
         TREMOLO:  3,
         VIBRATO:  4,
         ARPEGGIO: 5,
-        FILTER:   6
+        FILTER:   6,
+        REVERB:   7
     };
 
     var TEST_NOTE          = 'C4';
@@ -62,7 +63,8 @@
             tremolo:  false,
             vibrato:  false,
             arpeggio: false,
-            filter:   false
+            filter:   false,
+            effects:  false
         };
         this.isDrawing = false;
 
@@ -114,6 +116,9 @@
                     break;
                 case 'filter':
                     self.activateFilterEditor();
+                    break;
+                case 'effects':
+                    self.activateEffectsEditor();
                     break;
             }
         });
@@ -595,6 +600,25 @@
             this.container.find('.panel[data-panel="filter"] .depth input[type=range]').val(this.selectedInstrument.filter.depth).trigger('input');
 
             this.drawWaveform(CANVAS_MODES.FILTER);
+        },
+
+        activateEffectsEditor: function () {
+            var self = this;
+
+            if (!this.editorsInitialization.effects)  {
+                this.activateToggleButton(this.container.find('.panel[data-panel="effects"] .reverb'), self.selectedInstrument.effects, 'reverb', CANVAS_MODES.REVERB);
+
+                this.editorsInitialization.effects = true;
+            }
+
+            // initialize values
+            if (self.selectedInstrument.effects.reverb) {
+                this.container.find('.panel[data-panel="effects"] .reverb').addClass('selected');
+            } else {
+                this.container.find('.panel[data-panel="effects"] .reverb').removeClass('selected');
+            }
+
+            this.drawWaveform(CANVAS_MODES.REVERB);
         },
 
         playSound: function () {
