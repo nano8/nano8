@@ -34,6 +34,8 @@
         HIGHPASS: 'highpass',
         BANDPASS: 'bandpass'
     };
+    var FILTER_MAX_FREQUENCY         = 5000;
+    var FILTER_MODULATION_ADJUSTMENT = 1000;
 
     // normalize AudioContext across browsers
     window.AudioContext = window.AudioContext||window.webkitAudioContext;
@@ -81,8 +83,6 @@
             filter.gain.value      = instrument.filter.depth;
             filter.connect(amp);
 
-            console.log(instrument.filter);
-
             instrument.amp         = amp;
             instrument.tremoloOsc  = tremoloOsc;
             instrument.tremoloGain = tremoloGain;
@@ -125,12 +125,12 @@
                     speed:     3
                 },
                 filter: {
-                    active:        true,
+                    active:        false,
                     type:          FILTER_TYPES.LOWPASS,
-                    baseFrequency: 100,
+                    baseFrequency: 500,
                     frequencies:   _.times(MODULATIONS_STEPS, function () { return (MODULATION_DEPTH / 2) * (1 / MODULATION_DEPTH); }),
                     q:             100,
-                    depth:         10000
+                    depth:         500
                 }
             };
         },
@@ -142,7 +142,7 @@
             var bpm          = noteData.bpm;
             var doneCallback = noteData.doneCallback;
             var arpeggio     = noteData.arpeggio;
-            var startTime    = noteData.startTime !== undefined ? noteData.startTime / 1000: this.context.currentTime;
+            var startTime    = noteData.startTime !== undefined ? noteData.startTime : this.context.currentTime;
 
             var self = this;
 
@@ -178,7 +178,7 @@
 
                 var biquadFilter = this.context.createBiquadFilter();
                 biquadFilter.type = 'lowpass';
-                biquadFilter.connect(this.instruments[instrumentId].amp);
+                biquadFilter.connect(instrument.filter.active ? instrument.filterNode : instrument.amp);
 
                 _.times(bufferSize, function (i) { output[i] = Math.random() * 2 - 1; });
 
@@ -193,7 +193,7 @@
             }
 
             // setup the filter
-            instrument.filterNode.type            = instrument.filter.type;
+            instrument.filterNode.type = instrument.filter.type;
             instrument.filterNode.frequency.setValueAtTime(instrument.filter.baseFrequency, startTime);
             instrument.filterNode.Q.setValueAtTime(instrument.filter.q, startTime);
             instrument.filterNode.gain.setValueAtTime(instrument.filter.depth, startTime);
@@ -243,9 +243,8 @@
             _.times(MODULATIONS_STEPS, function (i) {
                 if (i === 0) return;
 
-                var volume          = instrument.volume[i];
                 // ignore the first volume slide as it's already set
-                instrument.amp.gain.linearRampToValueAtTime(volume, startTime + (ticks * i) + ANTI_CLICK_ADJUSTMENT);
+                instrument.amp.gain.linearRampToValueAtTime(instrument.volume[i], startTime + (ticks * i) + ANTI_CLICK_ADJUSTMENT);
 
                 // ignore the pitch changes if arpeggio is active
                 if (!instrument.arpeggio.active) {
@@ -257,6 +256,11 @@
                     if (!instrument.vibrato.active) {
                         oscillator.frequency.linearRampToValueAtTime(targetFrequency, startTime + (ticks * i) + ANTI_CLICK_ADJUSTMENT);
                     }
+                }
+
+                // modulate the filter
+                if (instrument.filter.active) {
+                    instrument.filterNode.frequency.linearRampToValueAtTime(instrument.filter.baseFrequency + (instrument.filter.frequencies[i] * FILTER_MODULATION_ADJUSTMENT), startTime + (ticks * i));
                 }
             });
 
@@ -278,13 +282,17 @@
                 instrument.playingNote = null;
 
                 if (doneCallback !== undefined) doneCallback();
-            }, stopTime - ANTI_CLICK_ADJUSTMENT)
+            }, stopTime - ANTI_CLICK_ADJUSTMENT);
+
+            console.log('startTime', startTime);
+            console.log('stopTime', stopTime);
         }
 
     };
 
     RetroSound.OSC_TYPES             = OSC_TYPES;
-    RetroSound.FILTER_TYPES           = FILTER_TYPES;
+    RetroSound.FILTER_TYPES          = FILTER_TYPES;
+    RetroSound.FILTER_MAX_FREQUENCY  = FILTER_MAX_FREQUENCY;
     RetroSound.ORDERED_NOTES         = ORDERED_NOTES;
     RetroSound.NOTES                 = NOTES;
     RetroSound.MODULATIONS_STEPS     = MODULATIONS_STEPS;

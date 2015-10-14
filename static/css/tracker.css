@@ -4,6 +4,7 @@
   background-image: url(../img/editor-ui.png);
   background-position: 0 -156px;
   cursor: pointer;
+  margin-left: 28px;
 }
 .image-ui-checkbutton.selected {
   background-position: -32px -156px;
@@ -20,12 +21,12 @@
 body,
 html {
   font-family: 'kongtextregular';
-  color: #ff9300;
+  color: #FF9300;
 }
 .header {
   width: 640px;
   height: 32px;
-  background: #ff9300;
+  background: #FF9300;
 }
 .editor {
   width: 640px;
@@ -46,8 +47,8 @@ html {
   width: 100%;
   height: 8px;
   cursor: pointer;
-  border-top: 4px solid #ffeee2;
-  border-bottom: 4px solid #ff9300;
+  border-top: 4px solid #FFEEE2;
+  border-bottom: 4px solid #FF9300;
 }
 .editor .editor-tracker input[type=range]::-webkit-slider-thumb {
   -webkit-appearance: none;
@@ -66,7 +67,7 @@ html {
 .editor .editor-tracker .page.sampler {
   width: 640px;
   height: 544px;
-  background: #70608b;
+  background: #70608B;
   position: relative;
 }
 .editor .editor-tracker .page.sampler .waveform {
@@ -129,8 +130,8 @@ html {
 .editor .editor-tracker .page.sampler .tabs .panels {
   height: 96px;
   width: 600px;
-  background: #fff300;
-  border: 4px solid #ff9300;
+  background: #FFF300;
+  border: 4px solid #FF9300;
 }
 .editor .editor-tracker .page.sampler .tabs .panels .panel {
   width: 584px;
@@ -141,7 +142,7 @@ html {
   position: relative;
 }
 .editor .editor-tracker .page.sampler .tabs .panels .panel .label {
-  color: #9b3e26;
+  color: #9B3E26;
   margin-bottom: 0px;
 }
 .editor .editor-tracker .page.sampler .tabs .panels .panel.selected {
@@ -264,6 +265,8 @@ html {
   background-image: url(../img/editor-ui.png);
   background-position: 0 -156px;
   cursor: pointer;
+  margin-left: 28px;
+  margin-left: 20px;
 }
 .editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="pitch"] .glide.selected {
   background-position: -32px -156px;
@@ -275,6 +278,7 @@ html {
   background-image: url(../img/editor-ui.png);
   background-position: 0 -156px;
   cursor: pointer;
+  margin-left: 28px;
 }
 .editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="tremolo"] .active.selected,
 .editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="vibrato"] .active.selected {
@@ -300,6 +304,7 @@ html {
   background-image: url(../img/editor-ui.png);
   background-position: 0 -156px;
   cursor: pointer;
+  margin-left: 28px;
 }
 .editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="arpeggio"] .active.selected {
   background-position: -32px -156px;
@@ -322,6 +327,7 @@ html {
   background-image: url(../img/editor-ui.png);
   background-position: 0 -156px;
   cursor: pointer;
+  margin-left: 28px;
 }
 .editor .editor-tracker .page.sampler .tabs .panels .panel[data-panel="filter"] .active.selected {
   background-position: -32px -156px;

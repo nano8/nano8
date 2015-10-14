@@ -184,7 +184,7 @@
             function drawBars(steps, source) {
                 stepX = self.waveformEditor.width / steps;
 
-                _.each(self.selectedInstrument[source], function (y, x, data) {
+                _.each(source, function (y, x, data) {
                     self.waveformEditor.line(x * stepX,
                         (1 - y) * self.waveformEditor.height,
                         (x * stepX) + stepX,
@@ -223,10 +223,10 @@
 
             switch (mode) {
                 case CANVAS_MODES.VOLUME:
-                    drawBars(RetroSound.MODULATIONS_STEPS, 'volume');
+                    drawBars(RetroSound.MODULATIONS_STEPS, this.selectedInstrument.volume);
                     break;
                 case CANVAS_MODES.PITCH:
-                    drawBars(RetroSound.MODULATIONS_STEPS, 'pitch');
+                    drawBars(RetroSound.MODULATIONS_STEPS, this.selectedInstrument.pitch);
                     break;
                 case CANVAS_MODES.TREMOLO:
                     if (self.selectedInstrument.tremolo.active) {
@@ -252,6 +252,9 @@
                             self.waveformEditor.line(x0, y + 1, x1, y + 1, PICO_COLORS.RED);
                         });
                     }
+                    break;
+                case CANVAS_MODES.FILTER:
+                    drawBars(RetroSound.MODULATIONS_STEPS, this.selectedInstrument.filter.frequencies);
                     break;
             }
 
@@ -295,7 +298,7 @@
                 var y = Math.floor(e.retroLayerY / (self.waveformEditor.height / depth));
                 var y = 1 - (e.retroLayerY / self.waveformEditor.height);
 
-                self.selectedInstrument[target][x] = y;
+                target[x] = y;
 
                 self.drawWaveform(canvasDrawType);
             }
@@ -373,7 +376,7 @@
                     });
             }
 
-            this.activateBarEditor('volume', CANVAS_MODES.VOLUME, RetroSound.MODULATIONS_STEPS, RetroSound.MODULATION_DEPTH);
+            this.activateBarEditor(this.selectedInstrument.volume, CANVAS_MODES.VOLUME, RetroSound.MODULATIONS_STEPS, RetroSound.MODULATION_DEPTH);
 
             this.drawWaveform(CANVAS_MODES.VOLUME);
         },
@@ -391,7 +394,7 @@
                 this.container.find('.glide').removeClass('selected');
             }
 
-            this.activateBarEditor('pitch', CANVAS_MODES.PITCH, RetroSound.MODULATIONS_STEPS, RetroSound.MODULATION_DEPTH);
+            this.activateBarEditor(this.selectedInstrument.pitch, CANVAS_MODES.PITCH, RetroSound.MODULATIONS_STEPS, RetroSound.MODULATION_DEPTH);
 
             this.drawWaveform(CANVAS_MODES.PITCH);
         },
@@ -552,7 +555,7 @@
             var self = this;
 
             if (!this.editorsInitialization.filter)  {
-                this.editorsInitialization.filter = true;
+                this.activateBarEditor(this.selectedInstrument.filter.frequencies, CANVAS_MODES.FILTER, RetroSound.MODULATIONS_STEPS, RetroSound.MODULATION_DEPTH);
 
                 this.activateToggleButton(this.container.find('.panel[data-panel="filter"] .active'), self.selectedInstrument.filter, 'active', CANVAS_MODES.FILTER);
 
@@ -576,7 +579,20 @@
                     self.container.find('.panel[data-panel="filter"] .depth span.value').text(newDepth);
                     self.selectedInstrument.filter.q = newDepth;
                 });
+
+                this.editorsInitialization.filter = true;
             }
+
+            // initialize values
+            if (self.selectedInstrument.filter.active) {
+                this.container.find('.panel[data-panel="filter"] .active').addClass('selected');
+            } else {
+                this.container.find('.panel[data-panel="filter"] .active').removeClass('selected');
+            }
+
+            this.container.find('.panel[data-panel="filter"] .frequency input[type=range]').val(this.selectedInstrument.filter.frequency).trigger('input');
+            this.container.find('.panel[data-panel="filter"] .q input[type=range]').val(this.selectedInstrument.filter.q).trigger('input');
+            this.container.find('.panel[data-panel="filter"] .depth input[type=range]').val(this.selectedInstrument.filter.depth).trigger('input');
 
             this.drawWaveform(CANVAS_MODES.FILTER);
         },
@@ -593,7 +609,7 @@
                 bpm:  TEST_NOTE_BPM,
                 doneCallback: function () {
                     self.playingSound = false;
-                },
+                }
             });
 
             this.playingSound = true;
