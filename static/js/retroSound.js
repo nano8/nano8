@@ -6,16 +6,6 @@
     var ORDERED_NOTES         = [['C0', 16.35], ['C#0', 17.32], ['Db0', 17.32], ['D0', 18.35], ['D#0', 19.45], ['Eb0', 19.45], ['E0', 20.60], ['F0', 21.83], ['F#0', 23.12], ['Gb0', 23.12], ['G0', 24.50], ['G#0', 25.96], ['Ab0', 25.96], ['A0', 27.50], ['A#0', 29.14], ['Bb0', 29.14], ['B0', 30.87], ['C1', 32.70], ['C#1', 34.65], ['Db1', 34.65], ['D1', 36.71], ['D#1', 38.89], ['Eb1', 38.89], ['E1', 41.20], ['F1', 43.65], ['F#1', 46.25], ['Gb1', 46.25], ['G1', 49.00], ['G#1', 51.91], ['Ab1', 51.91], ['A1', 55.00], ['A#1', 58.27], ['Bb1', 58.27], ['B1', 61.74], ['C2', 65.41], ['C#2', 69.30], ['Db2', 69.30], ['D2', 73.42], ['D#2', 77.78], ['Eb2', 77.78], ['E2', 82.41], ['F2', 87.31], ['F#2', 92.50], ['Gb2', 92.50], ['G2', 98.00], ['G#2', 103.83], ['Ab2', 103.83], ['A2', 110.00], ['A#2', 116.54], ['Bb2', 116.54], ['B2', 123.47], ['C3', 130.81], ['C#3', 138.59], ['Db3', 138.59], ['D3', 146.83], ['D#3', 155.56], ['Eb3', 155.56], ['E3', 164.81], ['F3', 174.61], ['F#3', 185.00], ['Gb3', 185.00], ['G3', 196.00], ['G#3', 207.65], ['Ab3', 207.65], ['A3', 220.00], ['A#3', 233.08], ['Bb3', 233.08], ['B3', 246.94], ['C4', 261.63], ['C#4', 277.18], ['Db4', 277.18], ['D4', 293.66], ['D#4', 311.13], ['Eb4', 311.13], ['E4', 329.63], ['F4', 349.23], ['F#4', 369.99], ['Gb4', 369.99], ['G4', 392.00], ['G#4', 415.30], ['Ab4', 415.30], ['A4', 440.00], ['A#4', 466.16], ['Bb4', 466.16], ['B4', 493.88], ['C5', 523.25], ['C#5', 554.37], ['Db5', 554.37], ['D5', 587.33], ['D#5', 622.25], ['Eb5', 622.25], ['E5', 659.26], ['F5', 698.46], ['F#5', 739.99], ['Gb5', 739.99], ['G5', 783.99], ['G#5', 830.61], ['Ab5', 830.61], ['A5', 880.00], ['A#5', 932.33], ['Bb5', 932.33], ['B5', 987.77], ['C6', 1046.50], ['C#6', 1108.73], ['Db6', 1108.73], ['D6', 1174.66], ['D#6', 1244.51], ['Eb6', 1244.51], ['E6', 1318.51], ['F6', 1396.91], ['F#6', 1479.98], ['Gb6', 1479.98], ['G6', 1567.98], ['G#6', 1661.22], ['Ab6', 1661.22], ['A6', 1760.00], ['A#6', 1864.66], ['Bb6', 1864.66], ['B6', 1975.53], ['C7', 2093.00], ['C#7', 2217.46], ['Db7', 2217.46], ['D7', 2349.32], ['D#7', 2489.02], ['Eb7', 2489.02], ['E7', 2637.02], ['F7', 2793.83], ['F#7', 2959.96], ['Gb7', 2959.96], ['G7', 3135.96], ['G#7', 3322.44], ['Ab7', 3322.44], ['A7', 3520.00], ['A#7', 3729.31], ['Bb7', 3729.31], ['B7', 3951.07], ['C8', 4186.0]]
     var NOTES                 = _.zipObject(ORDERED_NOTES);
 
-    // ADJ TIMES
-    // 0.25 -> 0.0045
-    // 0.18 -> 0.0045
-    // 0.15 -> 0.0045
-    // 0.125 -> 0.0045
-    // 0.09 -> 0.007
-    // 0.07 -> 0.011
-    // 0.06 -> 0.014
-    // var ANTI_CLICK_ADJUSTMENT = 0.01;
-
     var MODULATIONS_STEPS     = 16;
     var MODULATION_DEPTH      = 64;
     var TREMOLO_MAX_FREQUENCY = 20;
@@ -50,6 +40,28 @@
     var REVERB_DECAY = 2;
 
     var PATTERN_ROW_NOTE_LENGTH = 0.25;
+
+    var PATTERN_NOTE_NOTE       = 0;
+    var PATTERN_NOTE_INSTRUMENT = 1;
+    var PATTERN_NOTE_LENGTH     = 2;
+    var PATTERN_NOTE_VOLUME     = 3;
+    var PATTERN_NOTE_EFFECT_1   = 4;
+    var PATTERN_NOTE_EFFECT_2   = 5;
+    var PATTERN_NOTE_EFFECT_3   = 6;
+
+    var PATTERN_NOTE_EFFECT_NO_EFFECT    = 0;
+    var PATTERN_NOTE_EFFECT_GLIDE_ON     = 1;
+    var PATTERN_NOTE_EFFECT_GLIDE_OFF    = 2;
+    var PATTERN_NOTE_EFFECT_TREMOLO_ON   = 3;
+    var PATTERN_NOTE_EFFECT_TREMOLO_OFF  = 4;
+    var PATTERN_NOTE_EFFECT_VIBRATO_ON   = 5;
+    var PATTERN_NOTE_EFFECT_VIBRATO_OFF  = 6;
+    var PATTERN_NOTE_EFFECT_ARPEGGIO_ON  = 7;
+    var PATTERN_NOTE_EFFECT_ARPEGGIO_OFF = 8;
+    var PATTERN_NOTE_EFFECT_FILTER_ON    = 9;
+    var PATTERN_NOTE_EFFECT_FILTER_OFF   = 10;
+    var PATTERN_NOTE_EFFECT_REVERB_ON    = 11;
+    var PATTERN_NOTE_EFFECT_REVERB_OFF   = 12;
 
     // normalize AudioContext across browsers
     window.AudioContext = window.AudioContext||window.webkitAudioContext;
@@ -181,22 +193,22 @@
         },
 
         playNote: function (noteData) {
-            var instrumentId = noteData.instrumentId;
-            var note         = noteData.note;
-            var time         = noteData.time;
-            var bpm          = noteData.bpm;
-            var doneCallback = noteData.doneCallback;
-            var arpeggio     = noteData.arpeggio;
-            var startTime    = noteData.startTime !== undefined ? noteData.startTime : this.context.currentTime;
-            var glide        = noteData.glide;
-            var previousNote = noteData.previousNote;
+            var instrument    = noteData.instrument;
+            var note          = noteData.note;
+            var time          = noteData.time;
+            var bpm           = noteData.bpm;
+            var doneCallback  = noteData.doneCallback;
+            var arpeggio      = noteData.arpeggio;
+            var startTime     = noteData.startTime !== undefined ? noteData.startTime : this.context.currentTime;
+            var timeInSeconds = time / 1000;
+            var stopTime      = startTime + timeInSeconds;
+            var forceStop     = noteData.last;
+            var dontStop      = noteData.dontStop;
 
             var self = this;
 
             var currentNoteIndex = _.findIndex(ORDERED_NOTES, function (n) { return n[0] === note; });
 
-            var timeInSeconds      = time / 1000;
-            var instrument         = this.instruments[instrumentId];
 
             if (instrument.tuning !== 0) {
                 note = ORDERED_NOTES[currentNoteIndex + instrument.tuning][0];
@@ -214,13 +226,12 @@
 
             var oscillator;
 
-            console.log(instrument.playingNote);
-            if (glide && instrument.playingNote !== null && instrument.playingNote !== undefined) {
-                console.log('NON OSC');
+            if (instrument.glide && instrument.playingNote !== null && instrument.playingNote !== undefined) {
                 oscillator = instrument.playingNote;
+                console.log(instrument.playingNote.frequency.value);
+                console.log(noteFrequency);
                 instrument.playingNote.frequency.value = noteFrequency;
             } else {
-                console.log('OSC');
 
                 if (instrument.oscillatorType !== 'noise') {
                     oscillator                 = this.context.createOscillator();
@@ -268,8 +279,6 @@
 
                 oscillator.start(startTime);
 
-                var stopTime  = startTime + timeInSeconds;
-
                 // initial volume ramp up
                 instrument.amp.gain.setValueAtTime(0, startTime);
                 instrument.amp.gain.linearRampToValueAtTime(instrument.volume[0], startTime + anticlick);
@@ -306,6 +315,7 @@
                     });
                 }
             }
+
             // apply volume and pitch modulations
             var ticks = timeInSeconds / MODULATIONS_STEPS;
             _.times(MODULATIONS_STEPS, function (i) {
@@ -333,13 +343,14 @@
             });
 
             // stop the oscillator
-            if (glide) return oscillator;
+            if ((instrument.glide && !forceStop) || dontStop) return;
 
             self.clock.callbackAtTime(function () {
+                console.log('here');
                 var currentTime = self.context.currentTime;
 
                 // gradually stop the note
-                instrument.amp.gain.setValueAtTime(_.last(self.instruments[instrumentId].volume), currentTime);
+                instrument.amp.gain.setValueAtTime(_.last(instrument.volume), currentTime);
                 instrument.amp.gain.linearRampToValueAtTime(0.0, currentTime + anticlick);
 
                 // gradually stop the tremolo
@@ -362,15 +373,72 @@
             var currentNote;
             var noteLength;
 
+            var clonedInstruments = _.cloneDeep(this.instruments);
+
             _.each(pattern, function (row, i) {
-                noteLength = (1000 / (bpm / 60)) * row[2];
-                previousNote = self.playNote({
-                    note:         row[0],
-                    instrumentId: row[1],
+                var instrument = clonedInstruments[row[PATTERN_NOTE_INSTRUMENT]];
+
+                _.each([row[PATTERN_NOTE_EFFECT_1], row[PATTERN_NOTE_EFFECT_2], row[PATTERN_NOTE_EFFECT_3]], function (fx) {
+                    switch (fx) {
+                        case PATTERN_NOTE_EFFECT_GLIDE_ON:
+                            instrument.glide = true;
+                            break;
+                        case PATTERN_NOTE_EFFECT_GLIDE_OFF:
+                            instrument.glide = false;
+                            break;
+                        case PATTERN_NOTE_EFFECT_TREMOLO_ON:
+                            instrument.tremolo.active = true;
+                            break;
+                        case PATTERN_NOTE_EFFECT_TREMOLO_OFF:
+                            instrument.tremolo.active = false;
+                            break;
+                        case PATTERN_NOTE_EFFECT_VIBRATO_ON:
+                            instrument.vibrato.active = true;
+                            break;
+                        case PATTERN_NOTE_EFFECT_VIBRATO_OFF:
+                            instrument.vibrato.active = false;
+                            break;
+                        case PATTERN_NOTE_EFFECT_ARPEGGIO_ON:
+                            instrument.arpeggio.active = true;
+                            break;
+                        case PATTERN_NOTE_EFFECT_ARPEGGIO_OFF:
+                            instrument.arpeggio.active = false;
+                            break;
+                        case PATTERN_NOTE_EFFECT_FILTER_ON:
+                            instrument.filter.active = true;
+                            break;
+                        case PATTERN_NOTE_EFFECT_FILTER_OFF:
+                            instrument.filter.active = false;
+                            break;
+                        case PATTERN_NOTE_EFFECT_REVERB_ON:
+                            instrument.effects.reverb = true;
+                            break;
+                        case PATTERN_NOTE_EFFECT_REVERB_OFF:
+                            instrument.effects.reverb = false;
+                            break;
+                    }
+                });
+
+                noteLength = (1000 / (bpm / 60)) * row[PATTERN_NOTE_LENGTH];
+
+                var nextHasGlideOn = pattern[i + 1] !== undefined &&
+                        (pattern[i + 1][PATTERN_NOTE_EFFECT_1] === PATTERN_NOTE_EFFECT_GLIDE_ON
+                        || pattern[i + 1][PATTERN_NOTE_EFFECT_2] === PATTERN_NOTE_EFFECT_GLIDE_ON
+                        || pattern[i + 1][PATTERN_NOTE_EFFECT_3] === PATTERN_NOTE_EFFECT_GLIDE_ON);
+                var nextHasGlideOff = pattern[i + 1] !== undefined &&
+                        (pattern[i + 1][PATTERN_NOTE_EFFECT_1] === PATTERN_NOTE_EFFECT_GLIDE_OFF
+                        || pattern[i + 1][PATTERN_NOTE_EFFECT_2] === PATTERN_NOTE_EFFECT_GLIDE_OFF
+                        || pattern[i + 1][PATTERN_NOTE_EFFECT_3] === PATTERN_NOTE_EFFECT_GLIDE_OFF);
+                var nextIsSameInstrument = pattern[i + 1] !== undefined && pattern[i + 1][PATTERN_NOTE_INSTRUMENT] == row[PATTERN_NOTE_INSTRUMENT];
+
+                self.playNote({
+                    note:         row[PATTERN_NOTE_NOTE],
+                    instrument:   instrument,
                     time:         noteLength,
                     bpm:          bpm,
                     startTime:    startTime,
-                    glide:        true
+                    last:         i == pattern.length -1,
+                    dontStop:     (instrument.glide && nextIsSameInstrument && !nextHasGlideOff) || (nextIsSameInstrument && nextHasGlideOn)
                 });
 
                 startTime += (noteLength / 1000) + self.anticlickAdjustment((noteLength / 1000));
