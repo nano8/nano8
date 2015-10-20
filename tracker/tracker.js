@@ -624,17 +624,32 @@
         playSound: function () {
             var self = this;
 
-            if (this.playingSound) return;
+            // if (this.playingSound) return;
 
-            this.soundchip.playNote({
-                instrumentId: this.selectedInstrumentId,
-                note: TEST_NOTE,
-                time: this.testNoteLength,
-                bpm:  TEST_NOTE_BPM,
-                doneCallback: function () {
-                    self.playingSound = false;
-                }
-            });
+            // this.soundchip.playNote({
+            //     instrumentId: this.selectedInstrumentId,
+            //     note:         TEST_NOTE,
+            //     time:         125,
+            //     // time:         this.testNoteLength,
+            //     bpm:          TEST_NOTE_BPM,
+            //     doneCallback: function () {
+            //         self.playingSound = false;
+            //     }
+            // });
+
+            var pattern = [
+                ['C4', 0, 0.125],
+                ['D4', 0, 0.25],
+                ['E4', 0, 0.25],
+                ['F4', 0, 0.5],
+                ['F5', 0, 0.5],
+                ['E5', 0, 0.75],
+                ['D5', 0, 1],
+                ['C#5', 0, 0.125],
+                ['C5', 0, 1.25],
+            ];
+
+            this.soundchip.playPattern(pattern, 120);
 
             this.playingSound = true;
         }

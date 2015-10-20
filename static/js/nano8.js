@@ -36,6 +36,8 @@
 
     var PICO_FPS = 30;
 
+    var PICO_SCALE_FACTOR = 4;
+
     // nano-8 constants
     var NANO_SCREEN_WIDTH  = 160;
     var NANO_SCREEN_HEIGHT = 144;
@@ -43,6 +45,8 @@
     var NANO_MAP_BYTES = 3;
 
     var NANO_FPS = 30;
+
+    var NANO_SCALE_FACTOR = 4;
 
     // common constants
     var SCALE_FACTOR = 4;
@@ -82,6 +86,7 @@
     var screenHeight;
 
     var fps;
+    var scaleFactor;
 
     // will never change. this is the setting of the palette for the current game
     var palette;
@@ -451,6 +456,7 @@
             fps               = PICO_FPS;
             screenWidth       = PICO_SCREEN_WIDTH;
             screenHeight      = PICO_SCREEN_HEIGHT;
+            scaleFactor       = PICO_SCALE_FACTOR;
         } else if (SYSTEM === 'NANO-8') {
             palette           = PALETTE;
             currentColor      = INITIAL_COLOR;
@@ -459,6 +465,7 @@
             fps               = NANO_FPS;
             screenWidth       = NANO_SCREEN_WIDTH;
             screenHeight      = NANO_SCREEN_HEIGHT;
+            scaleFactor       = NANO_SCALE_FACTOR;
         }
 
         // setup the retro screen
@@ -466,7 +473,7 @@
             container: container,
             width:     screenWidth,
             height:    screenHeight
-        }, PICO_DEFAULT_COLORS_VALUES, 4);
+        }, PICO_DEFAULT_COLORS_VALUES, scaleFactor);
 
         // RetroScreen modifications
         retroScreen.originalSetPixel = RetroScreen.prototype.setPixel;

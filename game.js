@@ -4,17 +4,14 @@ var SYSTEM  = 'PICO-8';
 
 // __javascript__
 function _init() {
-
+    _.times(256, function (x) {
+        _.times(240, function (y) {
+            pset(x, y, flr(rnd(15)));
+        });
+    });
 }
 
 function _update() {
-    cls();
-    pal();
-    pset(10, 10, 8);
-    pal(8, 3);
-    pset(11, 11, 8);
-    pset(12, 12, 9);
-    pal(9, 3, 1);
 }
 
 function _draw() {
